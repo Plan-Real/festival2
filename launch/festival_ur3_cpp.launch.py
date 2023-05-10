@@ -92,9 +92,9 @@ def generate_launch_description():
     robot_description = get_robot_description()
     robot_description_semantic = get_robot_description_semantic()
     demo_node = Node(
-        package="hello_moveit",
-        executable="hello_moveit",
-        name="hello_moveit",
+        package="festival_ur3_cpp",
+        executable="festival_ur3_move",
+        name="festival_ur3_move",
         output="screen",
         parameters=[
             robot_description,

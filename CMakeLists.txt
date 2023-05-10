@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(hello_moveit)
+project(festival_ur3_cpp)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 add_compile_options(-Wall -Wextra -Wpedantic)
@@ -10,13 +10,13 @@ find_package(moveit_ros_planning_interface REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 
-add_executable(hello_moveit src/hello_moveit.cpp)
-target_include_directories(hello_moveit PUBLIC
+add_executable(festival_ur3_move src/festival_ur3_move.cpp)
+target_include_directories(festival_ur3_move PUBLIC
 $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 $<INSTALL_INTERFACE:include>)
-target_compile_features(hello_moveit PUBLIC c_std_99 cxx_std_17) # Require C99 and C++17
+target_compile_features(festival_ur3_move PUBLIC c_std_99 cxx_std_17) # Require C99 and C++17
 ament_target_dependencies(
-hello_moveit
+    festival_ur3_move
 "moveit_ros_planning_interface"
 "rclcpp"
 )
@@ -24,11 +24,11 @@ hello_moveit
 ament_python_install_package(${PROJECT_NAME})
 
 install(PROGRAMS
-launch/hello_moveit_ur.launch.py
+launch/festival_ur3_cpp.launch.py
 DESTINATION share/${PROJECT_NAME}/launch # Update the destination
 )
 
-install(TARGETS hello_moveit
+install(TARGETS festival_ur3_move
 DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY launch
