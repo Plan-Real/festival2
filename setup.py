@@ -21,6 +21,7 @@ setup(
     entry_points={
         'console_scripts': [
                 'waypoint = festival_ur3.waypoint_test:main',
+                'control = festival_ur3.joint_control:main',
     ],
 },
 )
