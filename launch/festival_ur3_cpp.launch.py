@@ -115,9 +115,9 @@ def generate_launch_description():
     # generate_common_hybrid_launch_description() returns a list of nodes to launch
     robot_description = get_robot_description()
     robot_description_semantic = get_robot_description_semantic()
-    # kinematics_yaml = load_yaml(
-    #     "ur_moveit_config", "config/kinematics.yaml"
-    # )
+    kinematics_yaml = load_yaml(
+        "ur_moveit_config", "config/kinematics.yaml"
+    )
     # kinematics_parameters = get_kinematics_parameters()
     demo_node = Node(
         package="festival_ur3_cpp",
