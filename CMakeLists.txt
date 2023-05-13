@@ -25,6 +25,7 @@ ament_python_install_package(${PROJECT_NAME})
 
 install(PROGRAMS
 launch/festival_ur3_cpp.launch.py
+launch/test.launch.py
 DESTINATION share/${PROJECT_NAME}/launch # Update the destination
 )
 
