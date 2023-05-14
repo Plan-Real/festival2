@@ -30,7 +30,7 @@ def load_yaml(package_name, file_path):
 def generate_launch_description():
     # planning_context
     robot_description_config = load_file(
-        "moveit_resources_panda_description", "urdf/panda.urdf"
+        "ur_description", "urdf/panda.urdf"
     )
     robot_description = {"robot_description": robot_description_config}
 
@@ -45,25 +45,13 @@ def generate_launch_description():
         "moveit_resources_panda_moveit_config", "config/kinematics.yaml"
     )
 
-    # Planning Functionality
-    ompl_planning_pipeline_config = {
-        "planning_plugin": "ompl_interface/OMPLPlanner",
-        "request_adapters": """default_planner_request_adapters/AddTimeOptimalParameterization default_planner_request_adapters/FixWorkspaceBounds default_planner_request_adapters/FixStartStateBounds default_planner_request_adapters/FixStartStateCollision default_planner_request_adapters/FixStartStatePathConstraints""",
-        "start_state_max_bounds_error": 0.1,
-    }
-
-    # MotionPlanningPipeline demo executable
-    motion_planning_pipeline_demo = Node(
-        name="motion_planning_pipeline_tutorial",
+    # MoveGroupInterface demo executable
+    move_group_demo = Node(
+        name="move_group_interface_tutorial",
         package="moveit2_tutorials",
-        executable="motion_planning_pipeline_tutorial",
+        executable="move_group_interface_tutorial",
         output="screen",
-        parameters=[
-            robot_description,
-            robot_description_semantic,
-            kinematics_yaml,
-            ompl_planning_pipeline_config,
-        ],
+        parameters=[robot_description, robot_description_semantic, kinematics_yaml],
     )
 
-    return LaunchDescription([motion_planning_pipeline_demo])
+    return LaunchDescription([move_group_demo])

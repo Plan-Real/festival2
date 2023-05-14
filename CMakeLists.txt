@@ -17,6 +17,10 @@ $<INSTALL_INTERFACE:include>)
 target_compile_features(festival_ur3_move PUBLIC c_std_99 cxx_std_17) # Require C99 and C++17
 ament_target_dependencies(
     festival_ur3_move
+    geometry_msgs
+    rclcpp
+    tf2
+    tf2_ros
 "moveit_ros_planning_interface"
 "rclcpp"
 )
