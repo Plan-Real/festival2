@@ -1,0 +1,3 @@
+source;share/festival_ur_core_node/environment/ament_prefix_path.sh
+source;share/festival_ur_core_node/environment/path.sh
+source;share/festival_ur_core_node/environment/pythonpath.sh

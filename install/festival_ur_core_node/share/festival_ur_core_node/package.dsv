@@ -1,0 +1,5 @@
+source;share/festival_ur_core_node/local_setup.bash
+source;share/festival_ur_core_node/local_setup.dsv
+source;share/festival_ur_core_node/local_setup.ps1
+source;share/festival_ur_core_node/local_setup.sh
+source;share/festival_ur_core_node/local_setup.zsh

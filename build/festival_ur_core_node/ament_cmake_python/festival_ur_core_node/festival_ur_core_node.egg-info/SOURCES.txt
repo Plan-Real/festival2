@@ -1,0 +1,6 @@
+setup.py
+festival_ur_core_node/__init__.py
+festival_ur_core_node.egg-info/PKG-INFO
+festival_ur_core_node.egg-info/SOURCES.txt
+festival_ur_core_node.egg-info/dependency_links.txt
+festival_ur_core_node.egg-info/top_level.txt
