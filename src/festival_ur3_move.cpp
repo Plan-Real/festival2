@@ -26,7 +26,6 @@ static const std::string PLANNING_GROUP_ARM = "ur_manipulator";
 
 enum Status
 {
-  move,
   start,
   stop,
 };
@@ -40,7 +39,7 @@ public:
       // joint_model_group_arm(
       //     move_group_arm.getCurrentState()->getJointModelGroup(
       //         PLANNING_GROUP_ARM)),
-      robot_status(move),
+      robot_status(stop),
       period(100)
   {
     //최대 10초동안 상태를 받아오기 위해 대
@@ -85,9 +84,8 @@ public:
     // joint_group_positions_arm.assign(6,0);
     
     //timer
-    // this->timer_ = this->create_wall_timer(std::chrono::milliseconds(int(period)),
-    //                                        std::bind(&MoveItPlanner::timer_callback, this));
-    timer_callback();
+    this->timer_ = this->create_wall_timer(std::chrono::milliseconds(int(period)),
+                                           std::bind(&MoveItPlanner::timer_callback, this));
   }    
   //end of constructor
   //   void topic_callback(const std_msgs::msg::String::SharedPtr msg)
@@ -112,7 +110,9 @@ public:
     //서버 -> 로봇 : 다찍었다.
     response->success = true;
     response->message = "finishpic";
-    communicateJointSetup();
+    
+    robot_status=stop;
+    initialJointSetup();
     RCLCPP_INFO(LOGGER, "sending back finish_pic response");
   }
 
@@ -123,9 +123,14 @@ public:
     camera_x=0.07165;
     camera_z=0.089;
     human_vx=-0.1;
+    human_vy=0.0;
     human_vz=-0.03;
     goal_x=0;
     goal_y=0;
+
+    // diff_humanTocamera_x = 1.0; 
+    // diff_humanTocamera_y = 
+    // diff_humanTocamera_z = 0.2;
   }
 
 
@@ -156,12 +161,16 @@ public:
     human_pose[2]=t.transform.translation.z;
     //사람이없는 경우 코드를 짜야됨.
   }
+
+
+  void camera_pose(const double input[])
+  {
+    // input[0]
+    // input[1]
+    // input[2]
+  }
  
   void initialJointSetup(){
-    // joint_group_positions_arm.emplace_back(-1.57);
-    // joint_group_positions_arm.emplace_back(-1.04);
-    // joint_group_positions_arm.emplace_back(-1.04);
-
     joint_group_positions_arm.emplace_back(0*M_PI/180); //base
     joint_group_positions_arm.emplace_back(-90*M_PI/180);
     joint_group_positions_arm.emplace_back(60*M_PI/180);
@@ -175,20 +184,6 @@ public:
     // robot_staus=stop;
   }
 
-  void communicateJointSetup(){
-
-    joint_group_positions_arm[0]=(0*M_PI/180); //base
-    joint_group_positions_arm[1]=(-90*M_PI/180);
-    joint_group_positions_arm[2]=(60*M_PI/180);
-    joint_group_positions_arm[3]=(-144*M_PI/180);
-    joint_group_positions_arm[4]=(-90*M_PI/180);
-    joint_group_positions_arm[5]=(0);
-    jointPrint(joint_group_positions_arm);
-    move_group_arm.setJointValueTarget(joint_group_positions_arm);
-    move_group_arm.move();
-    // service call 로봇이 멈춤이다.
-    // robot_staus=stop;
-  }
 
   void jointPrint(const std::vector<double> purpose_joint){
     std::cout << " 1 : " << purpose_joint[0]
@@ -236,21 +231,10 @@ public:
 
   void plan_arm_joint_space()
   {
-  // std::vector<double> joint_group_positions_arm;
   RCLCPP_INFO(LOGGER, "planning to joint space");
-  // joint_group_positions_arm.emplace_back(0);
-  // joint_group_positions_arm.emplace_back(-1.57);
-  // joint_group_positions_arm.emplace_back(0.0);
-  // joint_group_positions_arm.emplace_back(-1.57);
-  // joint_group_positions_arm.emplace_back(-1.57);
-  // joint_group_positions_arm.emplace_back(0);
-
   move_group_arm.setJointValueTarget(joint_group_positions_arm);
-  // move_group_arm.setJointVelocityTarget(joint_group_velocities_arm);
   // joint_group_positions_arm.clear();
 
-  
-  // RCLCPP_INFO(LOGGER, "%d",success );
   bool success_arm = (move_group_arm.plan(my_paln_arm)== moveit::planning_interface::MoveItErrorCode::SUCCESS);
 
   if (success_arm)
