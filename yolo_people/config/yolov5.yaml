@@ -1,4 +1,4 @@
-weight:  "/home/ccy/planr_ws/src/yolo_people/yolo_people/weights/face/yolov5n-face.pt"
+weight:  "/home/raiselab1/ros2_ws/src/yolo_people/yolo_people/weights/yolov5n-face.pt"
 # weight:  "/home/ccy/planr_ws/src/yolo_people/yolo_people/weights/yolov5s.pt"
 input_size: 640
 class_num:  1

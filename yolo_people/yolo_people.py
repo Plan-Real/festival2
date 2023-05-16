@@ -31,7 +31,7 @@ import torch.backends.cudnn as cudnn
 import torch
 
 ### Realsense
-import pyrealsense2 as rs
+import pyrealsense2.pyrealsense2 as rs
 
 class YoloV5:
     def __init__(self, yolov5_yaml_path):
@@ -174,7 +174,7 @@ class Yolo_people(Node):
 
         self.image_checker = True
                 
-        yolov5_yaml_path = '/home/ccy/planr_ws/src/yolo_people/yolo_people/config/yolov5.yaml'
+        yolov5_yaml_path = '/home/raiselab1/ros2_ws/src/yolo_people/yolo_people/config/yolov5.yaml'
         self.model = YoloV5(yolov5_yaml_path)
 
         self.peopletf_broadcaster = TransformBroadcaster(self)
@@ -190,23 +190,28 @@ class Yolo_people(Node):
         t = TransformStamped()
 
         t.header.stamp = self.get_clock().now().to_msg()
-        t.header.frame_id = 'world'
+        t.header.frame_id = 'front_camera_link'
         t.child_frame_id = 'human'
         howmanypeoplearethere = len(people_pose)
         # print(people_pose)
-        if howmanypeoplearethere == 2:
-            # print("It's two people")
-            t.transform.translation.x = (people_pose[0][0] + people_pose[1][0]) / 2
-            t.transform.translation.y = (people_pose[0][1] + people_pose[1][1]) / 2
-            t.transform.translation.z = (people_pose[0][2] + people_pose[1][2]) / 2
-        elif howmanypeoplearethere > 0:
-            t.transform.translation.x = people_pose[0][0]
-            t.transform.translation.y = people_pose[0][1]
-            t.transform.translation.z = people_pose[0][2]
-        else:
-            t.transform.translation.x = 0.0
-            t.transform.translation.y = 0.0
-            t.transform.translation.z = 0.0
+        if howmanypeoplearethere > 0 :
+            t.transform.translation.y = -people_pose[0][0] * 0.75
+            t.transform.translation.z = -people_pose[0][1] * 0.75
+            t.transform.translation.x = people_pose[0][1] * 0.75
+        
+        # if howmanypeoplearethere == 2:
+        #     # print("It's two people")
+        #     t.transform.translation.z = (people_pose[0][0] + people_pose[1][0]) / 2
+        #     t.transform.translation.x = (people_pose[0][1] + people_pose[1][1]) / 2
+        #     t.transform.translation.y = (people_pose[0][2] + people_pose[1][2]) / 2
+        # elif howmanypeoplearethere > 0:
+        #     t.transform.translation.z = people_pose[0][0] * 1
+        #     t.transform.translation.x = people_pose[0][1] * 1
+        #     t.transform.translation.y = people_pose[0][2] * 1
+        # else:
+        #     t.transform.translation.x = 0.0
+        #     t.transform.translation.y = 0.0
+        #     t.transform.translation.z = 0.0
 
 
         self.peopletf_broadcaster.sendTransform(t)
