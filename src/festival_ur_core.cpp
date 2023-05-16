@@ -4,7 +4,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 #include "trajectory_msgs/msg/joint_trajectory.hpp"
-// #include "festival_ur_interface/msg/Purpose.hpp"
+#include "festival_ur_interfaces/msg/purpose.hpp"
 
 #include "tf2/exceptions.h"
 #include "tf2_ros/transform_listener.h"
@@ -28,23 +28,24 @@ public:
     : Node("test_node"),
       joint_state_pose(6),
       joint_state_vel(6),
+      joint_group_positions_arm(6),
       robot_status(stop),
-      period(100)
+      period(4000)
   {                        
     //subscribe
     auto joint_state_callback = std::bind(&FestivalNode::jointStateCallback, this, std::placeholders::_1);
     Joint_stae_subscriber = this->create_subscription<sensor_msgs::msg::JointState>("joint_states", 10, joint_state_callback);
     
     // publisher
-    joint_pose_publisher = this->create_publisher<festival_ur_core::msg::Purpose>("joint_purpose", 10);
-    auto purpose_msgs = festival_ur_core::msg::Purpose();
+    joint_pose_publisher = this->create_publisher<festival_ur_interfaces::msg::Purpose>("joint_purpose", 10);
+    // purpose_msgs = festival_ur_interfaces::msg::Purpose();
     // service
-    auto start_callback = std::bind(&FestivalNode::startPicServer, this, std::placeholders::_1, std::placeholders::_2);
-    service_start = festival_ur_core_node_->create_service<std_srvs::srv::Trigger>("start_pic", start_callback);
+    service_start = festival_ur_core_node_->create_service<std_srvs::srv::Trigger>("start_pic", 
+    std::bind(&FestivalNode::startPicServer, this, std::placeholders::_1, std::placeholders::_2));
     RCLCPP_INFO(LOGGER, "Ready to excute start_pic server");
 
-    auto finish_callback = std::bind(&FestivalNode::finishPicServer, this, std::placeholders::_1, std::placeholders::_2);
-    service_finish = festival_ur_core_node_->create_service<std_srvs::srv::Trigger>("finish_pic", finish_callback);
+    service_finish = festival_ur_core_node_->create_service<std_srvs::srv::Trigger>("finish_pic", 
+    std::bind(&FestivalNode::finishPicServer, this, std::placeholders::_1, std::placeholders::_2));
     RCLCPP_INFO(LOGGER, "Ready to excute finish_pic server");
 
     // client
@@ -72,21 +73,36 @@ public:
                                            std::bind(&FestivalNode::timer_callback, this));
   }    
 
+
   //end of constructor
     void jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr msg)
   {
-    jointStateUpddate(msg->position);
+    joint_state_pose[0]=msg->position[0];
+    joint_state_pose[1]=msg->position[1];
+    joint_state_pose[2]=msg->position[2];
+    joint_state_pose[3]=msg->position[3];
+    joint_state_pose[4]=msg->position[4];
+    joint_state_pose[5]=msg->position[5];
+    joint_state_vel[0]=msg->velocity[0];
+    joint_state_vel[1]=msg->velocity[1];
+    joint_state_vel[2]=msg->velocity[2];
+    joint_state_vel[3]=msg->velocity[3];
+    joint_state_vel[4]=msg->velocity[4];
+    joint_state_vel[5]=msg->velocity[5];
+
   }
 
-  void startPicServer(const std::shared_ptr<std_srvs::srv::Trigger::Request> request,
-                    std::shared_ptr<std_srvs::srv::Trigger::Response> response)
+  void startPicServer(
+    const std::shared_ptr<std_srvs::srv::Trigger::Request> request,
+    const std::shared_ptr<std_srvs::srv::Trigger::Response> response)
   {
+    RCLCPP_INFO(LOGGER, "sending back start_pic response");
     //서버 -> 로봇 : 사진찍자.
     response->success = true;
     response->message = "startpic";
 
     robot_status=start;
-    RCLCPP_INFO(LOGGER, "sending back start_pic response");
+    service_start->send_response(*start_request_header, *response);
   }
 
   void finishPicServer(const std::shared_ptr<std_srvs::srv::Trigger::Request> request,
@@ -100,6 +116,7 @@ public:
     initialJointSetup();
     initialParamSetup();
     RCLCPP_INFO(LOGGER, "sending back finish_pic response");
+    service_finish->send_response(*finish_request_header, *response);
   }
 
 
@@ -156,16 +173,33 @@ public:
   }
  
   void initialJointSetup(){
-    joint_group_positions_arm.emplace_back(0*M_PI/180); //base
-    joint_group_positions_arm.emplace_back(-90*M_PI/180);
-    joint_group_positions_arm.emplace_back(60*M_PI/180);
-    joint_group_positions_arm.emplace_back(-144*M_PI/180);
-    joint_group_positions_arm.emplace_back(-90*M_PI/180);
-    joint_group_positions_arm.emplace_back(0);
+    joint_group_positions_arm[0]=(-180*M_PI/180); //base
+    joint_group_positions_arm[1]=(0*M_PI/180);
+    joint_group_positions_arm[2]=(-40*M_PI/180);
+    joint_group_positions_arm[3]=(-150*M_PI/180);
+    joint_group_positions_arm[4]=(-90*M_PI/180);
+    joint_group_positions_arm[5]=(0);
     jointPrint(joint_group_positions_arm);
     purpose_msgs.joints = joint_group_positions_arm;
-    purpose_msgs.time = 3;
-    joint_pose_publisher->publish(joint_group_positions_arm);
+    purpose_msgs.time = period/1000;
+    
+    
+    // service call 로봇이 멈춤이다.
+    // robot_staus=stop;
+  }
+
+  void secondJointSetup(){
+    joint_group_positions_arm[0]=(-180*M_PI/180); //base
+    joint_group_positions_arm[1]=(-155*M_PI/180);
+    joint_group_positions_arm[2]=(71*M_PI/180);
+    joint_group_positions_arm[3]=(-87*M_PI/180);
+    joint_group_positions_arm[4]=(-90*M_PI/180);
+    joint_group_positions_arm[5]=(0);
+    jointPrint(joint_group_positions_arm);
+    purpose_msgs.joints = joint_group_positions_arm;
+    purpose_msgs.time = period/1000;
+    
+    
     // service call 로봇이 멈춤이다.
     // robot_staus=stop;
   }
@@ -206,20 +240,23 @@ public:
 
   void timer_callback(){
     // this->timer_->cancel();
-
+    
     //작동모드입니다.
-    if(robot_status==start)
+    if(robot_status==stop)
     {
-      timerHumanTf();
-      jointupdate();//목표 joint의 위치 계산
-      plan_arm_joint_space();//보낸것
+
+      secondJointSetup();
+      // timerHumanTf();
+      // jointupdate();//목표 joint의 위치 계산
+      
     }
     else
     {
+      initialJointSetup();
       //작동모드일때 추정중인 여러 변수를 초기화해야함.
     }
+    joint_pose_publisher->publish(purpose_msgs);
 
-    
     // current_state(); //현재 로봇팔의 위치
   }
 
@@ -229,9 +266,10 @@ private:
   std::vector<double> joint_state_pose,
                       joint_state_vel,
                       joint_group_velocities_arm,
+                      joint_group_positions_arm,
                       purpose_joint;
 
-  double camera_x, camera_z, goal_x, goal_y, 
+  double camera_x, camera_z, goal_x, goal_y, goal_z,
          human_pose[3], human_vx, human_vy, human_vz,
          q2, q3, q4,period;
   Status robot_status;
@@ -240,7 +278,8 @@ private:
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr Joint_stae_subscriber;
 
   // ros publisher
-  rclcpp::Publisher<trajectory_msgs::msg::JointTrajectory>::SharedPtr joint_pose_publisher;
+  rclcpp::Publisher<festival_ur_interfaces::msg::Purpose>::SharedPtr joint_pose_publisher;
+  festival_ur_interfaces::msg::Purpose purpose_msgs;
 
   // ros timer
   rclcpp::TimerBase::SharedPtr timer_{nullptr};
@@ -253,7 +292,8 @@ private:
   //service server
   rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr service_start;
   rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr service_finish;
-
+  const std::shared_ptr<rmw_request_id_t> start_request_header;
+  const std::shared_ptr<rmw_request_id_t> finish_request_header;
   //service client
   rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr first_client;
   rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr second_client;

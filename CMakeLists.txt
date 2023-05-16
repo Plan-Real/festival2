@@ -9,6 +9,7 @@ find_package(ament_cmake REQUIRED)
 find_package(moveit_ros_planning_interface REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(ament_cmake_python REQUIRED)
+find_package(festival_ur_interfaces REQUIRED)
 
 add_executable(festival_ur_core src/festival_ur_core.cpp)
 target_include_directories(festival_ur_core PUBLIC
@@ -21,21 +22,12 @@ ament_target_dependencies(
     rclcpp
     tf2
     tf2_ros
+    festival_ur_interfaces
 "moveit_ros_planning_interface"
 "rclcpp"
 )
 
-# target_compile_features(festival_ur_core  PUBLIC c_std_99 cxx_std_17) # Require C99 and C++17
-ament_target_dependencies(
-    festival_ur_core
-    geometry_msgs
-    rclcpp
-    tf2
-    tf2_ros
-    std_msgs
-"moveit_ros_planning_interface"
-"rclcpp"
-)
+
 
 ament_python_install_package(${PROJECT_NAME})
 
