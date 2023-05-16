@@ -179,7 +179,7 @@ class Yolo_people(Node):
 
         self.peopletf_broadcaster = TransformBroadcaster(self)
 
-        timer_period = 0.02
+        timer_period = 0.1
         self.timer = self.create_timer(timer_period, self.peopletf)
 
         # self.peopletf()
@@ -262,9 +262,9 @@ class Yolo_people(Node):
         cv2.putText(canvas, text="FPS: {}".format(fps), org=(50, 50),
                     fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, thickness=2,
                     lineType=cv2.LINE_AA, color=(0, 0, 0))
-        # cv2.namedWindow('detection', flags=cv2.WINDOW_NORMAL |
-        #                 cv2.WINDOW_KEEPRATIO | cv2.WINDOW_GUI_EXPANDED)
-        # cv2.imshow('detection', canvas)
+        cv2.namedWindow('detection', flags=cv2.WINDOW_NORMAL |
+                        cv2.WINDOW_KEEPRATIO | cv2.WINDOW_GUI_EXPANDED)
+        cv2.imshow('detection', canvas)
         key = cv2.waitKey(1)
         # Press esc or 'q' to close the image window
         if key & 0xFF == ord('q') or key == 27:
