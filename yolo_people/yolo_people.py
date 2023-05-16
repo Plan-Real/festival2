@@ -139,8 +139,8 @@ class YoloV5:
                     # 绘制矩形框与标签
                     label = '%s %.2f' % (
                         self.yolov5['class_name'][-1], conf)
-                    self.plot_one_box(
-                        xyxy, canvas, label=label, color=self.colors[class_id], line_thickness=3)
+                    # self.plot_one_box(
+                    #     xyxy, canvas, label=label, color=self.colors[class_id], line_thickness=3)
         return canvas, class_id_list, xyxy_list, conf_list
 
     def plot_one_box(self, x, img, color=None, label=None, line_thickness=None):
@@ -149,24 +149,25 @@ class YoloV5:
             0.002 * (img.shape[0] + img.shape[1]) / 2) + 1  # line/font thickness
         color = color or [random.randint(0, 255) for _ in range(3)]
         c1, c2 = (int(x[0]), int(x[1])), (int(x[2]), int(x[3]))
-        cv2.rectangle(img, c1, c2, color, thickness=tl, lineType=cv2.LINE_AA)
-        if label:
-            tf = max(tl - 1, 1)  # font thickness
-            t_size = cv2.getTextSize(
-                label, 0, fontScale=tl / 3, thickness=tf)[0]
-            c2 = c1[0] + t_size[0], c1[1] - t_size[1] - 3
-            cv2.rectangle(img, c1, c2, color, -1, cv2.LINE_AA)  # filled
-            cv2.putText(img, label, (c1[0], c1[1] - 2), 0, tl / 3,
-                        [225, 255, 255], thickness=tf, lineType=cv2.LINE_AA)
+        # cv2.rectangle(img, c1, c2, color, thickness=tl, lineType=cv2.LINE_AA)
+        # if label:
+        #     tf = max(tl - 1, 1)  # font thickness
+        #     t_size = cv2.getTextSize(
+        #         label, 0, fontScale=tl / 3, thickness=tf)[0]
+        #     c2 = c1[0] + t_size[0], c1[1] - t_size[1] - 3
+        #     cv2.rectangle(img, c1, c2, color, -1, cv2.LINE_AA)  # filled
+        #     cv2.putText(img, label, (c1[0], c1[1] - 2), 0, tl / 3,
+        #                 [225, 255, 255], thickness=tf, lineType=cv2.LINE_AA)
 
 class Yolo_people(Node):
     def __init__(self):
         super().__init__('yolo_people')
-        self.t = TransformStamped()
+        self.human = TransformStamped()
+        self.end = TransformStamped()
         ### Realsense pipeline and config
         self.pipeline = rs.pipeline()
         self.config = rs.config()
-        self.config.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, 30)
+        self.config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
         self.config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
         self.profile = self.pipeline.start(self.config)
         self.align_to = rs.stream.color
@@ -178,6 +179,7 @@ class Yolo_people(Node):
         self.model = YoloV5(yolov5_yaml_path)
 
         self.peopletf_broadcaster = TransformBroadcaster(self)
+        self.end_tf = TransformBroadcaster(self)
 
         timer_period = 0.1
         self.timer = self.create_timer(timer_period, self.peopletf)
@@ -186,33 +188,52 @@ class Yolo_people(Node):
         # # print("TFuvk")
     
     def peopletf(self):
-        self.peopletf_broadcaster.sendTransform(self.t)
+        self.peopletf_broadcaster.sendTransform(self.human)
+        self.peopletf_broadcaster.sendTransform(self.end)
 
         people_pose = self.yolopeople_callback()
 
-        self.t.header.stamp = self.get_clock().now().to_msg()
-        self.t.header.frame_id = 'front_camera_link'
-        self.t.child_frame_id = 'human'
+        self.human.header.stamp = self.get_clock().now().to_msg()
+        self.human.header.frame_id = 'front_camera_link'
+        self.human.child_frame_id = 'human'
+
+        self.end.header.stamp = self.get_clock().now().to_msg()
+        self.end.header.frame_id = 'front_camera_link'
+        self.end.child_frame_id = 'end'
         howmanypeoplearethere = len(people_pose)
         # print(people_pose)
         if howmanypeoplearethere > 0 :
-            self.t.transform.translation.x = people_pose[0][2] * 1
-            self.t.transform.translation.y = -people_pose[0][0] * 1
-            self.t.transform.translation.z = -people_pose[0][1] * 1
-        
+            x = people_pose[0][2]
+            y = -people_pose[0][0]
+            z = -people_pose[0][1]
+
+            self.human.transform.translation.x = people_pose[0][2]
+            self.human.transform.translation.y = -people_pose[0][0]
+            self.human.transform.translation.z = -people_pose[0][1]            
+            # Original
+            # self.human.transform.translation.x = people_pose[0][2] * 1
+            # self.human.transform.translation.y = -people_pose[0][0] * 1
+            # self.human.transform.translation.z = -people_pose[0][1] * 1
+
+            # Photo Shot
+            self.end.transform.translation.x = 0.9848*x + 0.1736*z - 0.8
+            self.end.transform.translation.y = 0.0
+            self.end.transform.translation.z = -0.1736*x + 0.9848*z + 0.25
+
+
         # if howmanypeoplearethere == 2:
         #     # print("It's two people")
-        #     t.transform.translation.z = (people_pose[0][0] + people_pose[1][0]) / 2
-        #     t.transform.translation.x = (people_pose[0][1] + people_pose[1][1]) / 2
-        #     t.transform.translation.y = (people_pose[0][2] + people_pose[1][2]) / 2
+        #     human.transform.translation.z = (people_pose[0][0] + people_pose[1][0]) / 2
+        #     human.transform.translation.x = (people_pose[0][1] + people_pose[1][1]) / 2
+        #     human.transform.translation.y = (people_pose[0][2] + people_pose[1][2]) / 2
         # elif howmanypeoplearethere > 0:
-        #     t.transform.translation.z = people_pose[0][0] * 1
-        #     t.transform.translation.x = people_pose[0][1] * 1
-        #     t.transform.translation.y = people_pose[0][2] * 1
+        #     human.transform.translation.z = people_pose[0][0] * 1
+        #     human.transform.translation.x = people_pose[0][1] * 1
+        #     human.transform.translation.y = people_pose[0][2] * 1
         # else:
-        #     t.transform.translation.x = 0.0
-        #     t.transform.translation.y = 0.0
-        #     t.transform.translation.z = 0.0
+        #     human.transform.translation.x = 0.0
+        #     human.transform.translation.y = 0.0
+        #     human.transform.translation.z = 0.0
 
 
        
