@@ -1,6 +1,7 @@
 #include <memory>
 #include <string>
 #include <math.h>
+#include <Eigen/Core>
 
 #include <rclcpp/rclcpp.hpp>
 #include "trajectory_msgs/msg/joint_trajectory.hpp"
@@ -24,11 +25,12 @@ enum Status
 
 class FestivalNode : public rclcpp::Node {
 public:
-  FestivalNode(std::shared_ptr<rclcpp::Node> festival_ur_core_node_) 
-    : Node("test_node"),
-      joint_state_pose(6),
+  FestivalNode() 
+    : Node("festival_ur_core_node"),
+      joint_currentpose(6),
       joint_state_vel(6),
-      joint_group_positions_arm(6),
+      joint_targetpose(6),
+      joint_group_velocities_arm(6),
       robot_status(stop),
       period(4000)
   {                        
@@ -40,11 +42,11 @@ public:
     joint_pose_publisher = this->create_publisher<festival_ur_interfaces::msg::Purpose>("joint_purpose", 10);
     // purpose_msgs = festival_ur_interfaces::msg::Purpose();
     // service
-    service_start = festival_ur_core_node_->create_service<std_srvs::srv::Trigger>("start_pic", 
+    service_start = this->create_service<std_srvs::srv::Trigger>("start_pic", 
     std::bind(&FestivalNode::startPicServer, this, std::placeholders::_1, std::placeholders::_2));
     RCLCPP_INFO(LOGGER, "Ready to excute start_pic server");
 
-    service_finish = festival_ur_core_node_->create_service<std_srvs::srv::Trigger>("finish_pic", 
+    service_finish = this->create_service<std_srvs::srv::Trigger>("finish_pic", 
     std::bind(&FestivalNode::finishPicServer, this, std::placeholders::_1, std::placeholders::_2));
     RCLCPP_INFO(LOGGER, "Ready to excute finish_pic server");
 
@@ -60,13 +62,10 @@ public:
 
 
     //initial setting
-    joint_group_velocities_arm.assign(6,0);
 
     initialParamSetup();
     initialJointSetup();
-    jointPrint(joint_group_positions_arm);
-    joint_group_velocities_arm.assign(6,0);
-    // joint_group_positions_arm.assign(6,0);
+    jointPrint(joint_targetpose);
     
     //timer
     this->timer_ = this->create_wall_timer(std::chrono::milliseconds(int(period)),
@@ -77,12 +76,12 @@ public:
   //end of constructor
     void jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr msg)
   {
-    joint_state_pose[0]=msg->position[0];
-    joint_state_pose[1]=msg->position[1];
-    joint_state_pose[2]=msg->position[2];
-    joint_state_pose[3]=msg->position[3];
-    joint_state_pose[4]=msg->position[4];
-    joint_state_pose[5]=msg->position[5];
+    joint_currentpose[0]=msg->position[0];
+    joint_currentpose[1]=msg->position[1];
+    joint_currentpose[2]=msg->position[2];
+    joint_currentpose[3]=msg->position[3];
+    joint_currentpose[4]=msg->position[4];
+    joint_currentpose[5]=msg->position[5];
     joint_state_vel[0]=msg->velocity[0];
     joint_state_vel[1]=msg->velocity[1];
     joint_state_vel[2]=msg->velocity[2];
@@ -93,8 +92,8 @@ public:
   }
 
   void startPicServer(
-    const std::shared_ptr<std_srvs::srv::Trigger::Request> request,
-    const std::shared_ptr<std_srvs::srv::Trigger::Response> response)
+    const std::shared_ptr<std_srvs::srv::Trigger::Request> ,
+          std::shared_ptr<std_srvs::srv::Trigger::Response> response)
   {
     RCLCPP_INFO(LOGGER, "sending back start_pic response");
     //서버 -> 로봇 : 사진찍자.
@@ -102,10 +101,10 @@ public:
     response->message = "startpic";
 
     robot_status=start;
-    service_start->send_response(*start_request_header, *response);
+    secondJointSetup();
   }
 
-  void finishPicServer(const std::shared_ptr<std_srvs::srv::Trigger::Request> request,
+  void finishPicServer(const std::shared_ptr<std_srvs::srv::Trigger::Request> ,
                     std::shared_ptr<std_srvs::srv::Trigger::Response> response)
   {
     //서버 -> 로봇 : 다찍었다.
@@ -116,7 +115,6 @@ public:
     initialJointSetup();
     initialParamSetup();
     RCLCPP_INFO(LOGGER, "sending back finish_pic response");
-    service_finish->send_response(*finish_request_header, *response);
   }
 
 
@@ -132,7 +130,6 @@ public:
     goal_x=0;
     goal_y=0;
     goal_z=0;
-
   }
 
 
@@ -140,7 +137,7 @@ public:
   {
     geometry_msgs::msg::TransformStamped t;
     
-    std::string fromFrameRel = "world";
+    std::string fromFrameRel = "base_link";
     std::string toFrameRel = "human";
     try 
     {
@@ -173,15 +170,15 @@ public:
   }
  
   void initialJointSetup(){
-    joint_group_positions_arm[0]=(-180*M_PI/180); //base
-    joint_group_positions_arm[1]=(0*M_PI/180);
-    joint_group_positions_arm[2]=(-40*M_PI/180);
-    joint_group_positions_arm[3]=(-150*M_PI/180);
-    joint_group_positions_arm[4]=(-90*M_PI/180);
-    joint_group_positions_arm[5]=(0);
-    jointPrint(joint_group_positions_arm);
-    purpose_msgs.joints = joint_group_positions_arm;
-    purpose_msgs.time = period/1000;
+    joint_targetpose[0]=(-180*M_PI/180); //base
+    joint_targetpose[1]=(0*M_PI/180);
+    joint_targetpose[2]=(-40*M_PI/180);
+    joint_targetpose[3]=(-150*M_PI/180);
+    joint_targetpose[4]=(-90*M_PI/180);
+    joint_targetpose[5]=(0);
+    jointPrint(joint_targetpose);
+    purpose_msgs.joints = joint_targetpose;
+    purpose_msgs.time = 3;
     
     
     // service call 로봇이 멈춤이다.
@@ -189,15 +186,15 @@ public:
   }
 
   void secondJointSetup(){
-    joint_group_positions_arm[0]=(-180*M_PI/180); //base
-    joint_group_positions_arm[1]=(-155*M_PI/180);
-    joint_group_positions_arm[2]=(71*M_PI/180);
-    joint_group_positions_arm[3]=(-87*M_PI/180);
-    joint_group_positions_arm[4]=(-90*M_PI/180);
-    joint_group_positions_arm[5]=(0);
-    jointPrint(joint_group_positions_arm);
-    purpose_msgs.joints = joint_group_positions_arm;
-    purpose_msgs.time = period/1000;
+    joint_targetpose[0]=(-180*M_PI/180); //base
+    joint_targetpose[1]=(-155*M_PI/180);
+    joint_targetpose[2]=(71*M_PI/180);
+    joint_targetpose[3]=(-87*M_PI/180);
+    joint_targetpose[4]=(-90*M_PI/180);
+    joint_targetpose[5]=(0);
+    jointPrint(joint_targetpose);
+    purpose_msgs.joints = joint_targetpose;
+    purpose_msgs.time = 3;
     
     
     // service call 로봇이 멈춤이다.
@@ -215,39 +212,59 @@ public:
   }
 
   void jointupdate(){
-      q2=joint_group_positions_arm[1];
-      q3=joint_group_positions_arm[2];
-      q4=joint_group_positions_arm[3];
+      jacobian << -(787*cos(joint_currentpose[1] + joint_currentpose[2] + joint_currentpose[3]))/5000 - (89*sin(joint_currentpose[1] + joint_currentpose[2] + joint_currentpose[3]))/1000 - (2133*sin(joint_currentpose[1] + joint_currentpose[2]))/10000 - (2437*sin(joint_currentpose[1]))/10000, - (787*cos(joint_currentpose[1] + joint_currentpose[2] + joint_currentpose[3]))/5000 - (89*sin(joint_currentpose[1] + joint_currentpose[2] + joint_currentpose[3]))/1000 - (2133*sin(joint_currentpose[1] + joint_currentpose[2]))/10000, - (787*cos(joint_currentpose[1] + joint_currentpose[2] + joint_currentpose[3]))/5000 - (89*sin(joint_currentpose[1] + joint_currentpose[2] + joint_currentpose[3]))/1000,
+                  (787*sin(joint_currentpose[1] + joint_currentpose[2] + joint_currentpose[3]))/5000 - (89*cos(joint_currentpose[1] + joint_currentpose[2] + joint_currentpose[3]))/1000 - (2133*cos(joint_currentpose[1] + joint_currentpose[2]))/10000 - (2437*cos(joint_currentpose[1]))/10000,   (787*sin(joint_currentpose[1] + joint_currentpose[2] + joint_currentpose[3]))/5000 - (89*cos(joint_currentpose[1] + joint_currentpose[2] + joint_currentpose[3]))/1000 - (2133*cos(joint_currentpose[1] + joint_currentpose[2]))/10000,   (787*sin(joint_currentpose[1] + joint_currentpose[2] + joint_currentpose[3]))/5000 - (89*cos(joint_currentpose[1] + joint_currentpose[2] + joint_currentpose[3]))/1000,
+                  0,                                                                                        0,                                                            0,
+                  0,                                                                                        0,                                                            0,
+                  0,                                                                                        0,                                                            0,
+                  1,                                                                                        1,                                                            1;
       
       joint_group_velocities_arm[0]=0;
-      joint_group_velocities_arm[1]=(-(1574*goal_x*cos(q3 + q4)*sin(q2 + q3) + 1574*goal_y*cos(q3 + q4)*sin(q2 + q3) + 1574*human_vx*cos(q3 + q4)*sin(q2 + q3) + 1574*human_vz*cos(q3 + q4)*sin(q2 + q3) + 890*goal_x*sin(q2 + q3)*sin(q3 + q4) + 890*goal_y*sin(q2 + q3)*sin(q3 + q4) + 890*human_vx*sin(q2 + q3)*sin(q3 + q4) + 890*human_vz*sin(q2 + q3)*sin(q3 + q4) + 2133*goal_x*sin(q2 + q3)*sin(q3) + 2133*goal_y*sin(q2 + q3)*sin(q3) + 2133*human_vx*sin(q2 + q3)*sin(q3) + 2133*human_vz*sin(q2 + q3)*sin(q3) - 1574*goal_x*cos(q4)*sin(q2) - 1574*goal_y*cos(q4)*sin(q2) - 1574*human_vx*cos(q4)*sin(q2) - 1574*human_vz*cos(q4)*sin(q2) + 2437*goal_x*sin(q2)*sin(q3) - 890*goal_x*sin(q2)*sin(q4) - 890*goal_y*sin(q2)*sin(q4) + 2437*human_vx*sin(q2)*sin(q3) - 890*human_vx*sin(q2)*sin(q4) - 890*human_vz*sin(q2)*sin(q4))/(10000*sin(q3)));
-      joint_group_velocities_arm[2]=(-(1574*goal_x*cos(q2 + q3)*cos(q3 + q4) + 1574*goal_y*cos(q2 + q3)*cos(q3 + q4) + 1574*human_vx*cos(q2 + q3)*cos(q3 + q4) + 1574*human_vz*cos(q2 + q3)*cos(q3 + q4) + 890*goal_x*cos(q2 + q3)*sin(q3 + q4) + 890*goal_y*cos(q2 + q3)*sin(q3 + q4) + 890*human_vx*cos(q2 + q3)*sin(q3 + q4) + 890*human_vz*cos(q2 + q3)*sin(q3 + q4) + 2133*goal_x*cos(q2 + q3)*sin(q3) + 2133*goal_y*cos(q2 + q3)*sin(q3) + 2133*human_vx*cos(q2 + q3)*sin(q3) + 2133*human_vz*cos(q2 + q3)*sin(q3) - 1574*goal_x*cos(q2)*cos(q4) - 1574*goal_y*cos(q2)*cos(q4) - 1574*human_vx*cos(q2)*cos(q4) - 1574*human_vz*cos(q2)*cos(q4) + 2437*goal_x*cos(q2)*sin(q3) - 890*goal_x*cos(q2)*sin(q4) - 890*goal_y*cos(q2)*sin(q4) + 2437*human_vx*cos(q2)*sin(q3) - 890*human_vx*cos(q2)*sin(q4) - 890*human_vz*cos(q2)*sin(q4))/(10000*sin(q3)));
-      joint_group_velocities_arm[3]=(goal_x + goal_y + human_vx + human_vz);
+      joint_group_velocities_arm[1]=0;
+      joint_group_velocities_arm[2]=0;
+      joint_group_velocities_arm[3]=0;
       joint_group_velocities_arm[4]=0;
       joint_group_velocities_arm[5]=0;
       jointPrint(joint_group_velocities_arm);
-      joint_group_positions_arm[0]+=0.0;
-      joint_group_positions_arm[1]+=period*joint_group_velocities_arm[1];
-      joint_group_positions_arm[2]+=period*joint_group_velocities_arm[2];
-      joint_group_positions_arm[3]+=period*joint_group_velocities_arm[3];
-      joint_group_positions_arm[4]+=0.0;
-      jointPrint(joint_group_positions_arm);
-      // joint_group_positions_arm[5]+=0.5;
+      joint_targetpose[0]+=0.0;
+      joint_targetpose[1]+=period*joint_group_velocities_arm[1];
+      joint_targetpose[2]+=period*joint_group_velocities_arm[2];
+      joint_targetpose[3]+=period*joint_group_velocities_arm[3];
+      joint_targetpose[4]+=0.0;
+      jointPrint(joint_targetpose);
+      // joint_targetpose[5]+=0.5;
   }
 
+  bool check_arrival(const std::vector<double> current, 
+                     const std::vector<double> purpose, 
+                     const double threshold)
+  {
+    std::vector<double> error(6);
 
+    for (long unsigned int i=0; i<error.size();i++){
+      error[i]=std::abs(purpose[i]-current[i]);
+      if(error[i]<threshold) return true;
+    }
+    return false;
+  }
 
 
   void timer_callback(){
     // this->timer_->cancel();
     
     //작동모드입니다.
-    if(robot_status==stop)
+    if(robot_status==start)
     {
+      if(check_arrival(joint_currentpose, joint_targetpose, 0.001))
+      {
+        timerHumanTf();
+        jointupdate();
+      }
+      else
+      {
+        RCLCPP_INFO(LOGGER, "Arrive");
+      }
 
-      secondJointSetup();
-      // timerHumanTf();
-      // jointupdate();//목표 joint의 위치 계산
       
     }
     else
@@ -263,15 +280,16 @@ public:
 
 private:
   // moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
-  std::vector<double> joint_state_pose,
+  std::vector<double> joint_currentpose,
                       joint_state_vel,
                       joint_group_velocities_arm,
-                      joint_group_positions_arm,
+                      joint_targetpose,
                       purpose_joint;
 
   double camera_x, camera_z, goal_x, goal_y, goal_z,
          human_pose[3], human_vx, human_vy, human_vz,
          q2, q3, q4,period;
+  Eigen::Matrix<short, 6, 3> jacobian;
   Status robot_status;
   
   // ros subscriber
@@ -292,8 +310,6 @@ private:
   //service server
   rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr service_start;
   rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr service_finish;
-  const std::shared_ptr<rmw_request_id_t> start_request_header;
-  const std::shared_ptr<rmw_request_id_t> finish_request_header;
   //service client
   rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr first_client;
   rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr second_client;
@@ -310,14 +326,7 @@ int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
 
-  auto festival_ur_core_node = rclcpp::Node::make_shared("festival_ur_core_node");
-  rclcpp::executors::SingleThreadedExecutor festival_executor;
-  std::shared_ptr<FestivalNode> core_node = std::make_shared<FestivalNode>(festival_ur_core_node);
-
-
-  festival_executor.add_node(core_node);
-  festival_executor.spin();
-
+  rclcpp::spin(std::make_shared<FestivalNode>());
   rclcpp::shutdown();
   return 0;
 }
