@@ -16,7 +16,7 @@ from glob import glob
 
 from setuptools import setup
 
-package_name = "festival_ur_control_nodes"
+package_name = "festival_ur_control_node"
 
 setup(
     name=package_name,
@@ -49,9 +49,9 @@ Demo nodes for showing and testing functionalities of the ros2_control framework
     entry_points={
         "console_scripts": [
             "publisher_forward_position_controller = \
-                festival_ur_control_nodes.publisher_forward_position_controller:main",
+                festival_ur_control_node.publisher_forward_position_controller:main",
             "publisher_joint_trajectory_position_controller = \
-                festival_ur_control_nodes.publisher_joint_trajectory_position_controller:main",
+                festival_ur_control_node.publisher_joint_trajectory_position_controller:main",
         ],
     },
 )

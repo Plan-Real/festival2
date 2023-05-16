@@ -18,7 +18,7 @@ from builtin_interfaces.msg import Duration
 
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from sensor_msgs.msg import JointState
-from festival_ur_core.msg import Purpose
+from festival_ur_interfaces.msg import Purpose
 
 class PublisherJointTrajectory(Node):
     def __init__(self):
@@ -32,7 +32,8 @@ class PublisherJointTrajectory(Node):
         #     JointState, "joint_states", self.joint_state_callback, 10
         # )
         
-        self.publisher_ = self.create_publisher(JointTrajectory, "scaled_joint_trajectory_controller", 1)
+        self.publisher_ = self.create_publisher(JointTrajectory, 
+                                                "/scaled_joint_trajectory_controller/joint_trajectory", 1)
 
 
 
@@ -66,16 +67,16 @@ class PublisherJointTrajectory(Node):
         goal_purpose=msg.joints
         for value in goal_purpose:
             float_goal.append(float(value))
-        self.get_logger().info("joint_1 : {}, joint_2 : {}, joint_3 : {}, joint_4 : {}, joint_5 : {}, joint_6 : {}"
-                               .format(goal_purpose[0],goal_purpose[1], goal_purpose[2], goal_purpose[3], goal_purpose[4], goal_purpose[5] ) )
         
         joint_names = ["shoulder_pan_joint", "shoulder_lift_joint", "elbow_joint", "wrist_1_joint", "wrist_2_joint", "wrist_3_joint"]
         traj = JointTrajectory()
         traj.joint_names = joint_names
         point = JointTrajectoryPoint()
         point.positions = float_goal
-        point.time_from_start = Duration(msg.time)
+        point.time_from_start = Duration(nanosec=int(msg.time*(10**9)))
 
+        self.get_logger().info("joint_1 : {}, joint_2 : {}, joint_3 : {}, joint_4 : {}, joint_5 : {}, joint_6 : {}, time : {}"
+                               .format(goal_purpose[0],goal_purpose[1], goal_purpose[2], goal_purpose[3], goal_purpose[4], goal_purpose[5],  int(msg.time*1000)) )
         traj.points.append(point)
         self.publisher_.publish(traj)
 
