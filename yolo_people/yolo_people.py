@@ -162,7 +162,7 @@ class YoloV5:
 class Yolo_people(Node):
     def __init__(self):
         super().__init__('yolo_people')
-
+        self.t = TransformStamped()
         ### Realsense pipeline and config
         self.pipeline = rs.pipeline()
         self.config = rs.config()
@@ -179,25 +179,26 @@ class Yolo_people(Node):
 
         self.peopletf_broadcaster = TransformBroadcaster(self)
 
-        timer_period = 0.1
+        timer_period = 0.02
         self.timer = self.create_timer(timer_period, self.peopletf)
 
         # self.peopletf()
         # # print("TFuvk")
     
     def peopletf(self):
-        people_pose = self.yolopeople_callback()
-        t = TransformStamped()
+        self.peopletf_broadcaster.sendTransform(self.t)
 
-        t.header.stamp = self.get_clock().now().to_msg()
-        t.header.frame_id = 'front_camera_link'
-        t.child_frame_id = 'human'
+        people_pose = self.yolopeople_callback()
+
+        self.t.header.stamp = self.get_clock().now().to_msg()
+        self.t.header.frame_id = 'front_camera_link'
+        self.t.child_frame_id = 'human'
         howmanypeoplearethere = len(people_pose)
         # print(people_pose)
         if howmanypeoplearethere > 0 :
-            t.transform.translation.y = -people_pose[0][0] * 0.75
-            t.transform.translation.z = -people_pose[0][1] * 0.75
-            t.transform.translation.x = people_pose[0][1] * 0.75
+            self.t.transform.translation.x = people_pose[0][2] * 1
+            self.t.transform.translation.y = -people_pose[0][0] * 1
+            self.t.transform.translation.z = -people_pose[0][1] * 1
         
         # if howmanypeoplearethere == 2:
         #     # print("It's two people")
@@ -214,8 +215,7 @@ class Yolo_people(Node):
         #     t.transform.translation.z = 0.0
 
 
-        self.peopletf_broadcaster.sendTransform(t)
-
+       
     def yolopeople_callback(self):
         ### Get image to realsense
         intr, depth_intrin, color_image, depth_image, aligned_depth_frame = self.get_aligned_images()
@@ -239,7 +239,7 @@ class Yolo_people(Node):
 
         canvas, class_id_list, xyxy_list, conf_list = self.model.detect(color_image)
         t_end = time.time()
-        fps = int(1.0 / (t_end - t_start))
+
 
         camera_xyz_list=[]
         if xyxy_list:
@@ -262,9 +262,9 @@ class Yolo_people(Node):
         cv2.putText(canvas, text="FPS: {}".format(fps), org=(50, 50),
                     fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, thickness=2,
                     lineType=cv2.LINE_AA, color=(0, 0, 0))
-        cv2.namedWindow('detection', flags=cv2.WINDOW_NORMAL |
-                        cv2.WINDOW_KEEPRATIO | cv2.WINDOW_GUI_EXPANDED)
-        cv2.imshow('detection', canvas)
+        # cv2.namedWindow('detection', flags=cv2.WINDOW_NORMAL |
+        #                 cv2.WINDOW_KEEPRATIO | cv2.WINDOW_GUI_EXPANDED)
+        # cv2.imshow('detection', canvas)
         key = cv2.waitKey(1)
         # Press esc or 'q' to close the image window
         if key & 0xFF == ord('q') or key == 27:
