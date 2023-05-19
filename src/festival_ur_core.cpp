@@ -6,7 +6,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include "trajectory_msgs/msg/joint_trajectory.hpp"
 #include "festival_ur_interfaces/msg/purpose.hpp"
-
+static
 #include "tf2/exceptions.h"
 #include "tf2_ros/transform_listener.h"
 #include "tf2_ros/buffer.h"
@@ -18,6 +18,7 @@ static const rclcpp::Logger LOGGER = rclcpp::get_logger("ur_move_group_node");
 
 enum Status
 {
+  move,
   start,
   stop,
 };
@@ -32,6 +33,8 @@ public:
       joint_targetpose(6),
       joint_group_velocities_arm(6),
       robot_status(stop),
+      camera_targetpose(6),
+      error(6),
       period(4000)
   {                        
     //subscribe
@@ -121,52 +124,66 @@ public:
   void initialParamSetup(){
     camera_x=0.07165;
     camera_z=0.089;
-    human_vx=-0.0;
-    human_vy=0.0;
-    human_vz=-0.0;
-    human_pose[0]=0;
-    human_pose[1]=0;
-    human_pose[2]=0;
     goal_x=0;
     goal_y=0;
     goal_z=0;
   }
 
 
-  void timerHumanTf()
+  void timercameraTf()
   {
-    geometry_msgs::msg::TransformStamped t;
-    
-    std::string fromFrameRel = "base_link";
-    std::string toFrameRel = "human";
+    geometry_msgs::msg::TransformStamped end, camera;
+   
+    std::string from_frame_base = "base_link";
+    std::string to_frame_end = "end";
+    std::string to_frame_camera_link = "camera_link"
     try 
     {
-      t = tf_buffer_->lookupTransform(
-          toFrameRel, fromFrameRel,
+      end = tf_buffer_->lookupTransform(
+          to_frame_end, from_frame_base,
+          tf2::TimePointZero);
+      camera = tf_buffer_->lookupTransform(
+          to_frame_camera_link, from_frame_base,
           tf2::TimePointZero);
     }
     catch (const tf2::TransformException & ex) 
     {
       RCLCPP_INFO(
         LOGGER, "Could not transform %s to %s: %s",
-        toFrameRel.c_str(), fromFrameRel.c_str(), ex.what());
+        to_frame_end.c_str(), from_frame_base.c_str(), ex.what());
       return;
     }
-    human_vx=(t.transform.translation.x-human_pose[0])*0.5;
-    human_vz=(t.transform.translation.x-human_pose[1])*0.5;
-    human_vz=(t.transform.translation.x-human_pose[2])*0.5;
-    human_pose[0]=t.transform.translation.x;
-    human_pose[1]=t.transform.translation.y;
-    human_pose[2]=t.transform.translation.z;
-    //사람이없는 경우 코드를 짜야됨.
+    std::vector<double> camera_euler = quaternionToEuler(camera->transform.rotation);
+    static bool executed = false;
+    if(!executed)
+    {
+      camera_targetpose[3] = camera_euler[0]
+      camera_targetpose[4] = camera_euler[1]
+      camera_targetpose[5] = camera_euler[2] 
+      executed= true;
+    }
+    camera_targetpose[0]=end.transform.translation.x;
+    camera_targetpose[1]=end.transform.translation.y;
+    camera_targetpose[2]=end.transform.translation.z;
+
+    camera_currentpose[0]=camera.transform.translation.x;
+    camera_currentpose[1]=camera.transform.translation.y;
+    camera_currentpose[2]=camera.transform.translation.z;
+    camera_currentpose[3]=camera_euler[0]
+    camera_currentpose[4]=camera_euler[1]
+    camera_currentpose[5]=camera_euler[2]
+      
   }
 
-
-  void camera_pose(const double input[])
+  double errorNorm(const std::vector<double> target, const std::vector<double> current, Eigen::VectorXd& error )
   {
-    // input[0]
-    // input[1]
-    // input[2]
+    error << (target[0]-current[0]),
+             (target[1]-current[1]),
+             (target[2]-current[2]),
+             (target[3]-current[3]),
+             (target[4]-current[4]),
+             (target[5]-current[5]);
+    return error.norm();
   }
  
   void initialJointSetup(){
@@ -201,7 +218,6 @@ public:
     // robot_staus=stop;
   }
 
-
   void jointPrint(const std::vector<double> purpose_joint){
     std::cout << " 1 : " << purpose_joint[0]
       << " 2 : " << purpose_joint[1]
@@ -218,18 +234,12 @@ public:
                   0,                                                                                        0,                                                            0,
                   0,                                                                                        0,                                                            0,
                   1,                                                                                        1,                                                            1;
-      
-      joint_group_velocities_arm[0]=0;
-      joint_group_velocities_arm[1]=0;
-      joint_group_velocities_arm[2]=0;
-      joint_group_velocities_arm[3]=0;
-      joint_group_velocities_arm[4]=0;
-      joint_group_velocities_arm[5]=0;
-      jointPrint(joint_group_velocities_arm);
+      pinv = jacobian.completeOrthogonalDecomposition().pseudoInverse();
+      pinv*=error
       joint_targetpose[0]+=0.0;
-      joint_targetpose[1]+=period*joint_group_velocities_arm[1];
-      joint_targetpose[2]+=period*joint_group_velocities_arm[2];
-      joint_targetpose[3]+=period*joint_group_velocities_arm[3];
+      joint_targetpose[1]+=period*0.001*pinv(0,0);
+      joint_targetpose[2]+=period*0.001*pinv(0,1);
+      joint_targetpose[3]+=period*0.001*pinv(0,2);
       joint_targetpose[4]+=0.0;
       jointPrint(joint_targetpose);
       // joint_targetpose[5]+=0.5;
@@ -255,9 +265,11 @@ public:
     //작동모드입니다.
     if(robot_status==start)
     {
-      if(check_arrival(joint_currentpose, joint_targetpose, 0.001))
+      // if(check_arrival(joint_currentpose, joint_targetpose, 0.001))
+      // {
+      timercameraTf();
+      if(std::abs(errorNorm(camera_targetpose,camera_currentpose, error)-0.001)<0)
       {
-        timerHumanTf();
         jointupdate();
       }
       else
@@ -284,12 +296,16 @@ private:
                       joint_state_vel,
                       joint_group_velocities_arm,
                       joint_targetpose,
-                      purpose_joint;
+                      purpose_joint,
+                      camera_targetpose,
+                      camera_currentpose;
 
   double camera_x, camera_z, goal_x, goal_y, goal_z,
-         human_pose[3], human_vx, human_vy, human_vz,
          q2, q3, q4,period;
-  Eigen::Matrix<short, 6, 3> jacobian;
+
+  Eigen::VectorXd v;
+  Eigen::Matrix<double, 6, 3> jacobian;
+  Eigen::Matrix pinv, pinv_error;
   Status robot_status;
   
   // ros subscriber
