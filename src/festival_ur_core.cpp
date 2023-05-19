@@ -2,23 +2,24 @@
 #include <string>
 #include <math.h>
 #include <Eigen/Core>
+#include <Eigen/QR>
 
 #include <rclcpp/rclcpp.hpp>
 #include "trajectory_msgs/msg/joint_trajectory.hpp"
 #include "festival_ur_interfaces/msg/purpose.hpp"
-static
+
 #include "tf2/exceptions.h"
 #include "tf2_ros/transform_listener.h"
 #include "tf2_ros/buffer.h"
-
+#include <tf2/convert.h>
 #include <std_srvs/srv/trigger.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
+#include <tf2/LinearMath/Quaternion.h>
 
 static const rclcpp::Logger LOGGER = rclcpp::get_logger("ur_move_group_node");
 
 enum Status
 {
-  move,
   start,
   stop,
 };
@@ -32,10 +33,12 @@ public:
       joint_state_vel(6),
       joint_targetpose(6),
       joint_group_velocities_arm(6),
-      robot_status(stop),
+      robot_status(start),
       camera_targetpose(6),
+      camera_currentpose(6),
       error(6),
-      period(4000)
+      period(100),
+      jacobian(6,3)
   {                        
     //subscribe
     auto joint_state_callback = std::bind(&FestivalNode::jointStateCallback, this, std::placeholders::_1);
@@ -134,17 +137,15 @@ public:
   {
     geometry_msgs::msg::TransformStamped end, camera;
    
-    std::string from_frame_base = "base_link";
+    std::string from_frame_base = "shoulder_link";
     std::string to_frame_end = "end";
-    std::string to_frame_camera_link = "camera_link"
+    std::string to_frame_camera_link = "front_camera_link";
     try 
     {
       end = tf_buffer_->lookupTransform(
           to_frame_end, from_frame_base,
           tf2::TimePointZero);
-      camera = tf_buffer_->lookupTransform(
-          to_frame_camera_link, from_frame_base,
-          tf2::TimePointZero);
+
     }
     catch (const tf2::TransformException & ex) 
     {
@@ -153,15 +154,33 @@ public:
         to_frame_end.c_str(), from_frame_base.c_str(), ex.what());
       return;
     }
-    std::vector<double> camera_euler = quaternionToEuler(camera->transform.rotation);
+    try 
+    {
+          camera = tf_buffer_->lookupTransform(
+          to_frame_camera_link, from_frame_base,
+          tf2::TimePointZero);
+    }
+    catch (const tf2::TransformException & ex) 
+    {
+      RCLCPP_INFO(
+        LOGGER, "Could not transform %s to %s: %s",
+        to_frame_camera_link.c_str(), from_frame_base.c_str(), ex.what());
+      return;
+    }
+    RCLCPP_INFO(LOGGER, "%lf", camera.transform.rotation.x);
+    std::vector<double> camera_euler = quaternionToEuler(camera.transform.rotation.x, 
+                                                         camera.transform.rotation.y, 
+                                                         camera.transform.rotation.z, 
+                                                         camera.transform.rotation.w);
     static bool executed = false;
     if(!executed)
     {
-      camera_targetpose[3] = camera_euler[0]
-      camera_targetpose[4] = camera_euler[1]
-      camera_targetpose[5] = camera_euler[2] 
+      camera_targetpose[3] = camera_euler[0];
+      camera_targetpose[4] = camera_euler[1];
+      camera_targetpose[5] = camera_euler[2];
       executed= true;
     }
+
     camera_targetpose[0]=end.transform.translation.x;
     camera_targetpose[1]=end.transform.translation.y;
     camera_targetpose[2]=end.transform.translation.z;
@@ -169,10 +188,20 @@ public:
     camera_currentpose[0]=camera.transform.translation.x;
     camera_currentpose[1]=camera.transform.translation.y;
     camera_currentpose[2]=camera.transform.translation.z;
-    camera_currentpose[3]=camera_euler[0]
-    camera_currentpose[4]=camera_euler[1]
-    camera_currentpose[5]=camera_euler[2]
-      
+    camera_currentpose[3]=camera_euler[0];
+    camera_currentpose[4]=camera_euler[1];
+    camera_currentpose[5]=camera_euler[2];
+    
+  }
+
+  std::vector<double> quaternionToEuler(double qx, double qy, double qz, double qw) {
+      tf2::Quaternion quat(qx, qy, qz, qw);
+      tf2::Matrix3x3 mat(quat);
+      double roll, pitch, yaw;
+      mat.getRPY(roll, pitch, yaw);
+
+      std::vector<double> euler = {roll, pitch, yaw};
+      return euler;
   }
 
   double errorNorm(const std::vector<double> target, const std::vector<double> current, Eigen::VectorXd& error )
@@ -204,9 +233,9 @@ public:
 
   void secondJointSetup(){
     joint_targetpose[0]=(-180*M_PI/180); //base
-    joint_targetpose[1]=(-155*M_PI/180);
-    joint_targetpose[2]=(71*M_PI/180);
-    joint_targetpose[3]=(-87*M_PI/180);
+    joint_targetpose[1]=(-47*M_PI/180);
+    joint_targetpose[2]=(-100*M_PI/180);
+    joint_targetpose[3]=(-26*M_PI/180);
     joint_targetpose[4]=(-90*M_PI/180);
     joint_targetpose[5]=(0);
     jointPrint(joint_targetpose);
@@ -228,20 +257,26 @@ public:
   }
 
   void jointupdate(){
+      RCLCPP_INFO(LOGGER, "sending back start_pic response");
       jacobian << -(787*cos(joint_currentpose[1] + joint_currentpose[2] + joint_currentpose[3]))/5000 - (89*sin(joint_currentpose[1] + joint_currentpose[2] + joint_currentpose[3]))/1000 - (2133*sin(joint_currentpose[1] + joint_currentpose[2]))/10000 - (2437*sin(joint_currentpose[1]))/10000, - (787*cos(joint_currentpose[1] + joint_currentpose[2] + joint_currentpose[3]))/5000 - (89*sin(joint_currentpose[1] + joint_currentpose[2] + joint_currentpose[3]))/1000 - (2133*sin(joint_currentpose[1] + joint_currentpose[2]))/10000, - (787*cos(joint_currentpose[1] + joint_currentpose[2] + joint_currentpose[3]))/5000 - (89*sin(joint_currentpose[1] + joint_currentpose[2] + joint_currentpose[3]))/1000,
                   (787*sin(joint_currentpose[1] + joint_currentpose[2] + joint_currentpose[3]))/5000 - (89*cos(joint_currentpose[1] + joint_currentpose[2] + joint_currentpose[3]))/1000 - (2133*cos(joint_currentpose[1] + joint_currentpose[2]))/10000 - (2437*cos(joint_currentpose[1]))/10000,   (787*sin(joint_currentpose[1] + joint_currentpose[2] + joint_currentpose[3]))/5000 - (89*cos(joint_currentpose[1] + joint_currentpose[2] + joint_currentpose[3]))/1000 - (2133*cos(joint_currentpose[1] + joint_currentpose[2]))/10000,   (787*sin(joint_currentpose[1] + joint_currentpose[2] + joint_currentpose[3]))/5000 - (89*cos(joint_currentpose[1] + joint_currentpose[2] + joint_currentpose[3]))/1000,
-                  0,                                                                                        0,                                                            0,
-                  0,                                                                                        0,                                                            0,
-                  0,                                                                                        0,                                                            0,
-                  1,                                                                                        1,                                                            1;
-      pinv = jacobian.completeOrthogonalDecomposition().pseudoInverse();
-      pinv*=error
+                  0.0,                                                                                        0.0,                                                            0.0,
+                  0.0,                                                                                        0.0,                                                            0.0,
+                  0.0,                                                                                        0.0,                                                            0.0,
+                  1.0,                                                                                        1.0,                                                            1.0;
+      
+      RCLCPP_INFO(LOGGER, "sending back start_pic response");
+      Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> pinv = jacobian.completeOrthogonalDecomposition().pseudoInverse();
+      
+      pinv_error=pinv*error;
       joint_targetpose[0]+=0.0;
-      joint_targetpose[1]+=period*0.001*pinv(0,0);
-      joint_targetpose[2]+=period*0.001*pinv(0,1);
-      joint_targetpose[3]+=period*0.001*pinv(0,2);
+      joint_targetpose[1]+=period*0.001*pinv_error(0,0);
+      joint_targetpose[2]+=period*0.001*pinv_error(1,0);
+      joint_targetpose[3]+=period*0.001*pinv_error(2,0);
       joint_targetpose[4]+=0.0;
-      jointPrint(joint_targetpose);
+      purpose_msgs.joints = joint_targetpose;
+      purpose_msgs.time = period*0.001;
+      
       // joint_targetpose[5]+=0.5;
   }
 
@@ -268,10 +303,16 @@ public:
       // if(check_arrival(joint_currentpose, joint_targetpose, 0.001))
       // {
       timercameraTf();
-      if(std::abs(errorNorm(camera_targetpose,camera_currentpose, error)-0.001)<0)
+      if(std::abs(errorNorm(camera_targetpose,camera_currentpose, error)-0.1)>0)
       {
+        
         jointupdate();
+        std::cout << jacobian << std::endl;
+        std::cout << error << std::endl;
+        jointPrint(joint_targetpose);
+
       }
+      
       else
       {
         RCLCPP_INFO(LOGGER, "Arrive");
@@ -303,9 +344,10 @@ private:
   double camera_x, camera_z, goal_x, goal_y, goal_z,
          q2, q3, q4,period;
 
-  Eigen::VectorXd v;
-  Eigen::Matrix<double, 6, 3> jacobian;
-  Eigen::Matrix pinv, pinv_error;
+  Eigen::VectorXd error;
+  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> jacobian;
+  // Eigen::Matrix<double, 6,6> pinv;
+  Eigen::Matrix<double, 3, 1> pinv_error;
   Status robot_status;
   
   // ros subscriber
