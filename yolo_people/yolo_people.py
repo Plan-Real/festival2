@@ -17,6 +17,12 @@ import rclpy
 from rclpy.node import Node
 from tf2_ros import StaticTransformBroadcaster, TransformBroadcaster
 from geometry_msgs.msg import TransformStamped
+from sensor_msgs.msg import Image
+from cv_bridge import CvBridge
+import cv2
+
+
+
 
 ### yolo v5
 import yaml 
@@ -52,7 +58,7 @@ class YoloV5:
         is_half = device.type != 'cpu'
         # 载入模型
         model = attempt_load(
-            self.yolov5['weight']
+            str(ROOT) + self.yolov5['weight']
             , map_location=device)
         input_size = check_img_size(
             self.yolov5['input_size'], s=model.stride.max())  # 检查模型的尺寸
@@ -162,6 +168,10 @@ class YoloV5:
 class Yolo_people(Node):
     def __init__(self):
         super().__init__('yolo_people')
+        self.bridge = CvBridge()
+        self.realsense_publisher = self.create_publisher(Image, '/image_raw', 10)
+
+
         self.t = TransformStamped()
         ### Realsense pipeline and config
         self.pipeline = rs.pipeline()
@@ -174,8 +184,7 @@ class Yolo_people(Node):
 
         self.image_checker = True
                 
-        yolov5_yaml_path = '/home/raiselab1/ros2_ws/src/yolo_people/yolo_people/config/yolov5.yaml'
-        self.model = YoloV5(yolov5_yaml_path)
+        self.model = YoloV5(str(ROOT) + str('/config/yolov5.yaml'))
 
         self.peopletf_broadcaster = TransformBroadcaster(self)
 
@@ -199,22 +208,6 @@ class Yolo_people(Node):
             self.t.transform.translation.x = people_pose[0][2] * 1
             self.t.transform.translation.y = -people_pose[0][0] * 1
             self.t.transform.translation.z = -people_pose[0][1] * 1
-        
-        # if howmanypeoplearethere == 2:
-        #     # print("It's two people")
-        #     t.transform.translation.z = (people_pose[0][0] + people_pose[1][0]) / 2
-        #     t.transform.translation.x = (people_pose[0][1] + people_pose[1][1]) / 2
-        #     t.transform.translation.y = (people_pose[0][2] + people_pose[1][2]) / 2
-        # elif howmanypeoplearethere > 0:
-        #     t.transform.translation.z = people_pose[0][0] * 1
-        #     t.transform.translation.x = people_pose[0][1] * 1
-        #     t.transform.translation.y = people_pose[0][2] * 1
-        # else:
-        #     t.transform.translation.x = 0.0
-        #     t.transform.translation.y = 0.0
-        #     t.transform.translation.z = 0.0
-
-
        
     def yolopeople_callback(self):
         ### Get image to realsense
@@ -227,6 +220,11 @@ class Yolo_people(Node):
             self.image_checker = False  
             print("[Done] Success get Image")
 
+        ### Image Publish
+        image_raw = self.bridge.cv2_to_imgmsg(color_image)
+        self.realsense_publisher.publish(image_raw)
+
+
         ### Load image to realsense
         depth_colormap = cv2.applyColorMap(
             cv2.convertScaleAbs(depth_image, alpha = 0.03),
@@ -236,10 +234,8 @@ class Yolo_people(Node):
 
         ### load yolo v5 model
         t_start = time.time()
-
         canvas, class_id_list, xyxy_list, conf_list = self.model.detect(color_image)
         t_end = time.time()
-
 
         camera_xyz_list=[]
         if xyxy_list:
@@ -251,8 +247,12 @@ class Yolo_people(Node):
                     depth_intrin,
                     (ux, uy),
                     dis)
+                
                 camera_xyz = np.round(np.array(camera_xyz), 3)
                 camera_xyz = camera_xyz.tolist()
+                # print(camera_xyz)
+                # if camera_xyz[0] == 0 or camera_xyz[1] == 0 or camera_xyz[2] == 0:
+                #     print("====================0====================")
                 cv2.circle(canvas, (ux,uy), 4, (255, 255, 255), 5)
                 cv2.putText(canvas, str(camera_xyz), (ux+20, uy+10), 0, 1,
                             [225, 255, 255], thickness=2, lineType=cv2.LINE_AA)
@@ -262,14 +262,17 @@ class Yolo_people(Node):
         cv2.putText(canvas, text="FPS: {}".format(fps), org=(50, 50),
                     fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, thickness=2,
                     lineType=cv2.LINE_AA, color=(0, 0, 0))
-        # cv2.namedWindow('detection', flags=cv2.WINDOW_NORMAL |
-        #                 cv2.WINDOW_KEEPRATIO | cv2.WINDOW_GUI_EXPANDED)
-        # cv2.imshow('detection', canvas)
+        cv2.namedWindow('detection', flags=cv2.WINDOW_NORMAL |
+                        cv2.WINDOW_KEEPRATIO | cv2.WINDOW_GUI_EXPANDED)
+        cv2.imshow('detection', canvas)
+
         key = cv2.waitKey(1)
         # Press esc or 'q' to close the image window
         if key & 0xFF == ord('q') or key == 27:
             cv2.destroyAllWindows()
             # break
+        
+        # print(len(camera_xyz_list))
 
         return camera_xyz_list
         
