@@ -1,0 +1,5 @@
+<<<<<<< HEAD
+video/*.mp4 filter=lfs diff=lfs merge=lfs -text
+=======
+yolo_people/weights/face/yolov5n-face.pt filter=lfs diff=lfs merge=lfs -text
+>>>>>>> d592d82... first
