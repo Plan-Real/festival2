@@ -19,7 +19,10 @@ Intel RealSense SDK 2.0
 Tested on Jetpack 5.0.0(Orin), Ubuntu 22.04(Laptop)
 
 <p align="center">
-![TF](https://github.com/Plan-Real/festival/blob/main/image/3.jpg)
+  <img src="https://github.com/Plan-Real/festival/blob/main/image/3.jpg" 
+       width="50%" 
+       height="50%"
+       />
 </p>
 
 ## Reference
