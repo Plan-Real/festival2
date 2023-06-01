@@ -37,7 +37,10 @@ In the modern world, the creation of personal digital images has become increasi
 ## Ferris Wheel
 
 <center>
-  <img src="image/0.jpg" width="10%" height="10%"/>
+  <img src="image/0.jpg" 
+       width="50%" 
+       height="50%"
+       />
 </center>
 
 ### Special Thanks
