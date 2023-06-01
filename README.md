@@ -12,7 +12,7 @@
 ### AI Researcher & Robot Developer
 [최찬역(Chanyeok Choi)](https://github.com/Angledsugar)
 
-### Web Developer (Front&Back-End)
+### Full stack Web Developer
 [남윤재(Yunjea Nam)](https://github.com/ujma1234)
 
 ### Web Designer
