@@ -36,12 +36,12 @@ In the modern world, the creation of personal digital images has become increasi
 
 ## Ferris Wheel
 
-<center>
+<p align="center">
   <img src="image/0.jpg" 
        width="50%" 
        height="50%"
        />
-</center>
+</p>
 
 ### Special Thanks
 김완수(Wansoo Kim):Profeesial at Department of Robotics Engineering , Hanyang University ERICA (HARCO Lab) \
