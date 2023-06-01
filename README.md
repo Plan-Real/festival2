@@ -1,5 +1,5 @@
 # Manipulator photographer
-## PlanR
+## Team PlanR
 ### 2023 Hanyang University ERICA spring festival flea market 
 
 ## Member
@@ -26,3 +26,16 @@ In the modern world, the creation of personal digital images has become increasi
 ## AI
 ## Box system
 ## Ferris Wheel
+
+### Special Thanks
+김완수(Wansoo Kim):Profeesial at Department of Robotics Engineering , Hanyang University ERICA (HARCO Lab) \
+박창순(Bacchang Soon):Profeesial at Department of Computer Science, Hanyang University ERICA \
+최설아() \
+박수환() \
+추다인()
+
+### Sponser
+Raise Lab \
+AIRO Lab \
+한양대학교 ERICA 창업교육센터 \
+한양대학교 ERICA SW중심대학 사업단
