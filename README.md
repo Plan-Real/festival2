@@ -2,7 +2,6 @@
 ## project Team : PlanR
 ## host : 2023 Hanyang University ERICA spring festival flea market 
 
----
 ## Member
 ### CEO & Robot Hardware Developer
 이왕건(Wanggeon Lee) 
