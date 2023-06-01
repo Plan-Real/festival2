@@ -1,6 +1,6 @@
 # Manipulator photographer
-## project Team : PlanR
-## host : 2023 Hanyang University ERICA spring festival flea market 
+### project Team : PlanR
+### host : 2023 Hanyang University ERICA spring festival flea market 
 
 ## Member
 ### CEO & Robot Hardware Developer
