@@ -27,14 +27,16 @@ In the modern world, the creation of personal digital images has become increasi
 
 ## AI
 ### YOLO
-<img src="image/3.jpg" width="270" height="360"/> 
+<img src="image/3.jpg" width="360" height="270"/> 
 
 ### AnimeGAN
-<img src="image/1.jpg" width="270" height="360"/>
+<img src="image/1.jpg" width="360" height="270"/>
 
 ## Box system
 
 ## Ferris Wheel
+
+[PlanR-member](iamge/0.jpg)
 
 ### Special Thanks
 김완수(Wansoo Kim):Profeesial at Department of Robotics Engineering , Hanyang University ERICA (HARCO Lab) \
