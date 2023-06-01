@@ -51,7 +51,7 @@ In the modern world, the creation of personal digital images has become increasi
 추다인(Dainn Chu)
 
 ### Sponser
-Raise Lab \
+[Raise Lab](https://sites.google.com/umich.edu/youngmoonlee/home) \
 AIRO Lab \
 한양대학교 ERICA 창업교육센터 \
 한양대학교 ERICA SW중심대학 사업단
