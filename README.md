@@ -44,7 +44,7 @@ In the modern world, the creation of personal digital images has become increasi
 </p>
 
 ### Special Thanks
-김완수(Wansoo Kim):Profeesial at Department of Robotics Engineering , Hanyang University ERICA (HARCO Lab) \
+김완수(Wansoo Kim):Profeesial at Department of Robotics Engineering , Hanyang University ERICA [HARCO Lab](https://harco.hanyang.ac.kr/) \
 박창순(Changsson Park):Profeesial, Hanyang University ERICA \
 최설아(Seolah Choi) \
 박수환(Suhwan Park) \
