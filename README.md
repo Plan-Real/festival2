@@ -48,7 +48,7 @@ In the modern world, the creation of personal digital images has become increasi
 박창순(Changsson Park):Profeesial, Hanyang University ERICA \
 최설아(Seolah Choi) \
 박수환(Suhwan Park) \
-추다인(Dain Chu)
+추다인(Dainn Chu)
 
 ### Sponser
 Raise Lab \
