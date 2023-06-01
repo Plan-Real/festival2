@@ -4,8 +4,8 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from yolo_people.models.common import Conv, DWConv
-from yolo_people.utils.google_utils import attempt_download
+from festival_yolo.models.common import Conv, DWConv
+from festival_yolo.utils.google_utils import attempt_download
 
 import sys
 

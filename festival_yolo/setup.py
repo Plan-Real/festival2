@@ -5,7 +5,7 @@ from glob import glob
 from urllib.request import urlretrieve
 from setuptools import find_packages
 
-package_name = 'yolo_people'
+package_name = 'festival_yolo'
 
 setup(
     name=package_name,
@@ -26,7 +26,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'yolo_people = yolo_people.yolo_people:main'
+            'festival_yolo = festival_yolo.festival_yolo:main'
         ],
     },
 )

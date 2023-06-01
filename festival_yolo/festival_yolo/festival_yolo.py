@@ -27,12 +27,12 @@ import cv2
 ### yolo v5
 import yaml 
 import random
-from yolo_people.utils.torch_utils import select_device, load_classifier, time_synchronized
-from yolo_people.utils.general import (
+from festival_yolo.utils.torch_utils import select_device, load_classifier, time_synchronized
+from festival_yolo.utils.general import (
     check_img_size, non_max_suppression, apply_classifier, scale_coords,
     xyxy2xywh, strip_optimizer, set_logging)
-from yolo_people.utils.datasets import LoadStreams, LoadImages, letterbox
-from yolo_people.models.experimental import attempt_load
+from festival_yolo.utils.datasets import LoadStreams, LoadImages, letterbox
+from festival_yolo.models.experimental import attempt_load
 import torch.backends.cudnn as cudnn
 import torch
 

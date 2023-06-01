@@ -11,11 +11,11 @@ import torch.nn as nn
 sys.path.append('./')  # to run '$ python *.py' files in subdirectories
 logger = logging.getLogger(__name__)
 
-from yolo_people.models.common import Conv, Bottleneck, SPP, DWConv, Focus, BottleneckCSP, C3, ShuffleV2Block, Concat, NMS, autoShape, StemBlock, BlazeBlock, DoubleBlazeBlock
-from yolo_people.models.experimental import MixConv2d, CrossConv
-from yolo_people.utils.autoanchor import check_anchor_order
-from yolo_people.utils.general import make_divisible, check_file, set_logging
-from yolo_people.utils.torch_utils import time_synchronized, fuse_conv_and_bn, model_info, scale_img, initialize_weights, \
+from festival_yolo.models.common import Conv, Bottleneck, SPP, DWConv, Focus, BottleneckCSP, C3, ShuffleV2Block, Concat, NMS, autoShape, StemBlock, BlazeBlock, DoubleBlazeBlock
+from festival_yolo.models.experimental import MixConv2d, CrossConv
+from festival_yolo.utils.autoanchor import check_anchor_order
+from festival_yolo.utils.general import make_divisible, check_file, set_logging
+from festival_yolo.utils.torch_utils import time_synchronized, fuse_conv_and_bn, model_info, scale_img, initialize_weights, \
     select_device, copy_attr
 
 try:

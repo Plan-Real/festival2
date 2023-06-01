@@ -8,9 +8,9 @@ import torch
 import torch.nn as nn
 from PIL import Image, ImageDraw
 
-from yolo_people.utils.datasets import letterbox
-from yolo_people.utils.general import non_max_suppression, make_divisible, scale_coords, xyxy2xywh
-from yolo_people.utils.plots import color_list
+from festival_yolo.utils.datasets import letterbox
+from festival_yolo.utils.general import non_max_suppression, make_divisible, scale_coords, xyxy2xywh
+from festival_yolo.utils.plots import color_list
 
 import warnings
 
