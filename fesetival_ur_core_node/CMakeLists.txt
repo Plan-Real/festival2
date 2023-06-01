@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(festival_ur_core_node)
+project(festival_ur_core)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 add_compile_options(-Wall -Wextra -Wpedantic)
@@ -14,22 +14,26 @@ find_package(eigen3_cmake_module REQUIRED)
 find_package(Eigen3)
 
 
-add_executable(festival_ur_core src/festival_ur_core.cpp)
-target_include_directories(festival_ur_core PUBLIC
-$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-$<INSTALL_INTERFACE:include>)
-target_compile_features(festival_ur_core PUBLIC c_std_99 cxx_std_17) # Require C99 and C++17
-ament_target_dependencies(
-    festival_ur_core
-    Eigen3
-    std_msgs
-    rclcpp
-    tf2
-    tf2_ros
-    festival_ur_interfaces
-"moveit_ros_planning_interface"
-"rclcpp"
+include_directories(
+  include
 )
+
+
+set(DEPENDENCIES
+    "Eigen3"
+    "std_msgs"
+    "rclcpp"
+    "tf2"
+    "tf2_ros"
+    "festival_ur_interfaces"
+    "moveit_ros_planning_interface"
+)
+
+set(EXECUTABLE_NAME "festival_ur_core")
+
+add_executable(${EXECUTABLE_NAME} src/core_main.cpp)
+target_link_libraries(${EXECUTABLE_NAME} ${PROJECT_NAME}_lib)
+ament_target_dependencies(${EXECUTABLE_NAME} ${DEPENDENCIES})
 
 
 
@@ -42,22 +46,18 @@ launch/test.launch.py
 DESTINATION share/${PROJECT_NAME}/launch # Update the destination
 )
 
-install(TARGETS festival_ur_core
-DESTINATION lib/${PROJECT_NAME})
-
-install(DIRECTORY launch
-DESTINATION share/${PROJECT_NAME} # Update the destination
-)
-
 ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS})
 ament_export_dependencies(eigen3_cmake_module)
 ament_export_dependencies(Eigen3)
 
-if(BUILD_TESTING)
-find_package(ament_lint_auto REQUIRED)
-set(ament_cmake_copyright_FOUND TRUE)
-set(ament_cmake_cpplint_FOUND TRUE)
-ament_lint_auto_find_test_dependencies()
-endif()
 
+install(DIRECTORY launch param
+  DESTINATION share/${PROJECT_NAME}
+)
+
+install(TARGETS ${EXECUTABLE_NAME}
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+ament_export_include_directories(include)
 ament_package()
