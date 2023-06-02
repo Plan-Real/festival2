@@ -32,7 +32,10 @@ In the modern world, the creation of personal digital images has become increasi
 ### AnimeGAN
 <img src="image/1.jpg" width="360" height="270"/>
 
-## Box system
+## Festival Server
+If you are curious about the contents related to the festival server, click this link.
+
+[Festival server](https://github.com/Plan-Real/festival_server)
 
 ## Ferris Wheel
 
