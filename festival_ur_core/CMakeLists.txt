@@ -18,6 +18,9 @@ include_directories(
   include
 )
 
+add_library(${PROJECT_NAME}_lib
+  "src/festival.cpp"
+)
 
 set(DEPENDENCIES
     "Eigen3"
@@ -31,6 +34,9 @@ set(DEPENDENCIES
 
 set(EXECUTABLE_NAME "festival_ur_core")
 
+target_link_libraries(${PROJECT_NAME}_lib)
+ament_target_dependencies(${PROJECT_NAME}_lib ${DEPENDENCIES})
+
 add_executable(${EXECUTABLE_NAME} src/core_main.cpp)
 target_link_libraries(${EXECUTABLE_NAME} ${PROJECT_NAME}_lib)
 ament_target_dependencies(${EXECUTABLE_NAME} ${DEPENDENCIES})
@@ -38,12 +44,11 @@ ament_target_dependencies(${EXECUTABLE_NAME} ${DEPENDENCIES})
 
 
 
-ament_python_install_package(${PROJECT_NAME})
 
 install(PROGRAMS
-launch/festival_ur_core_node.launch.py
-launch/test.launch.py
-DESTINATION share/${PROJECT_NAME}/launch # Update the destination
+  launch/festival_ur_core.launch.py
+  launch/test.launch.py
+  DESTINATION share/${PROJECT_NAME}/launch # Update the destination
 )
 
 ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS})
@@ -60,4 +65,4 @@ install(TARGETS ${EXECUTABLE_NAME}
 )
 
 ament_export_include_directories(include)
-ament_package()
+ament_package() 
