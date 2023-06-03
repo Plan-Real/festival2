@@ -23,7 +23,7 @@ In the modern world, the creation of personal digital images has become increasi
 
 ## System Architecture
 
-<img src="https://github.com/Plan-Real/festival/assets/98142496/597527e0-32d3-46eb-8705-bbf7a7d7973e" width=70%/>
+<img src="https://github.com/Plan-Real/festival/assets/98142496/597527e0-32d3-46eb-8705-bbf7a7d7973e" width=80%/>
 
 ## AI
 ### YOLO
