@@ -22,6 +22,15 @@ public:
     explicit URcontrol(const std::string & ur_ip, const double control_time)
     virtual ~URcontrol(){}
 
+    void ChangeControltime(const double control_time){ control_time_=control_time; }
+
+    void FollowHuman(const Eigen::Vector3d target_waypoint_vel, const double acceleration=0.5);
+
+    void MoveJoint(const std::vector<double> target_joint,
+                   const double speed=1.05,
+                   const double accel=1.4,
+                   const bool Asynchronous = false);
+
 private:
 
     void InitUR(const std::string & ur_ip);
@@ -30,13 +39,12 @@ private:
     std::vector<double> GetJointSpeed();
     
     
-    double NormalizeError(const std::vector<double> target, 
-                     const std::vector<double> current, 
-                     Eigen::VectorXd& error);
+    double NormError(const std::vector<double> target, 
+                     const std::vector<double> current);
 
-    void UpdateJoint();
+    std::vector<double> UpdateJointVel(const Eigen::Vector3d target_waypoint_vel);
 
-    void FollowHuman();
+
     std::shared_ptr<RTDEControlInterface> controlPtr;
     std::shared_ptr<RTDEReceiveInterface> receivePtr;
     
