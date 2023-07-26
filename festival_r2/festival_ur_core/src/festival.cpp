@@ -29,11 +29,11 @@ FestivalNode::FestivalNode()
   // service
   service_start = this->create_service<std_srvs::srv::Trigger>("start_pic", 
   std::bind(&FestivalNode::startPicServer, this, std::placeholders::_1, std::placeholders::_2));
-  RCLCPP_INFO(LOGGER, "Ready to excute start_pic server");
+  RCLCPP_INFO(LOGGER, "Ready to execute start_pic server");
 
   service_finish = this->create_service<std_srvs::srv::Trigger>("finish_pic", 
   std::bind(&FestivalNode::finishPicServer, this, std::placeholders::_1, std::placeholders::_2));
-  RCLCPP_INFO(LOGGER, "Ready to excute finish_pic server");
+  RCLCPP_INFO(LOGGER, "Ready to execute finish_pic server");
 
   // client
   first_client = create_client<std_srvs::srv::Trigger>("start_pic");
