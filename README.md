@@ -13,7 +13,7 @@
 [최찬역(Chanyeok Choi)](https://github.com/Angledsugar)
 
 ### Full stack Web Developer
-[남윤재(Yunjea Nam)](https://github.com/ujma1234)
+[남윤재(Yunjea Name)](https://github.com/ujma1234)
 
 ### Web Designer
 박혜원()
@@ -53,7 +53,7 @@ If you are curious about the contents related to the festival server, click this
 박수환(Suhwan Park) \
 추다인(Dainn Chu)
 
-### Sponser
+### Sponsor
 [Raise Lab](https://sites.google.com/umich.edu/youngmoonlee/home) \
 AIRO Lab \
 CN Lab \

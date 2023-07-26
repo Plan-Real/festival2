@@ -5,28 +5,25 @@ from glob import glob
 from urllib.request import urlretrieve
 from setuptools import find_packages
 
-package_name = 'festival_yolo'
+package_name = "festival_yolo"
 
 setup(
     name=package_name,
-    version='0.0.0',
+    version="0.0.0",
     packages=[package_name],
     data_files=[
-        ('share/ament_index/resource_index/packages',
-            ['resource/' + package_name]),
-        ('share/' + package_name, ['package.xml']),
-        (os.path.join('share', package_name), glob('./launch/*.launch.py')),
+        ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
+        ("share/" + package_name, ["package.xml"]),
+        (os.path.join("share", package_name), glob("./launch/*.launch.py")),
     ],
-    install_requires=['setuptools'],
+    install_requires=["setuptools"],
     zip_safe=True,
-    maintainer='Angledsugar',
-    maintainer_email='angledsugar@gmail.com',
-    description='TODO: Package description',
-    license='TODO: License declaration',
-    tests_require=['pytest'],
+    maintainer="Angledsugar",
+    maintainer_email="angledsugar@gmail.com",
+    description="TODO: Package description",
+    license="TODO: License declaration",
+    tests_require=["pytest"],
     entry_points={
-        'console_scripts': [
-            'festival_yolo = festival_yolo.festival_yolo:main'
-        ],
+        "console_scripts": ["festival_yolo = festival_yolo.festival_yolo:main"],
     },
 )

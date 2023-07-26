@@ -85,5 +85,3 @@ std::vector<double> URcontrol::UpdateJointVel(const Eigen::Vector3d target_waypo
 
     return joint_vel_vector;
 }
-
-

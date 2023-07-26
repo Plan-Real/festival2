@@ -57,11 +57,11 @@ public:
     // service
     auto start_callback = std::bind(&MoveItPlanner::startPicServer, this, std::placeholders::_1, std::placeholders::_2);
     service_start = move_group_node_->create_service<std_srvs::srv::Trigger>("start_pic", start_callback);
-    RCLCPP_INFO(LOGGER, "Ready to excute start_pic server");
+    RCLCPP_INFO(LOGGER, "Ready to execute start_pic server");
 
     auto finish_callback = std::bind(&MoveItPlanner::finishPicServer, this, std::placeholders::_1, std::placeholders::_2);
     service_finish = move_group_node_->create_service<std_srvs::srv::Trigger>("finish_pic", finish_callback);
-    RCLCPP_INFO(LOGGER, "Ready to excute finish_pic server");
+    RCLCPP_INFO(LOGGER, "Ready to execute finish_pic server");
 
     // client
     first_client = create_client<std_srvs::srv::Trigger>("start_pic");

@@ -7,7 +7,7 @@ FILE = Path(__file__).absolute()
 ROOT = FILE.parents[1]  # yolov5/ dir
 
 # Check YOLOv5 Annotator font
-font = 'Arial.ttf'
+font = "Arial.ttf"
 # try:
 #     ImageFont.truetype(font)
 # except Exception as e:  # download if missing
