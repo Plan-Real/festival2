@@ -1,0 +1,90 @@
+# Docker Compose file for TurtleBot3 Behavior Examples
+#
+# Usage:
+#
+# To build the images:
+#   docker compose build
+#
+# To start up a specific service by name:
+#   docker compose up <service_name>
+#
+# To open an interactive shell to a running container:
+#   docker exec -it <container_name> bash
+
+version: "3.9"
+services:
+  # Base image containing dependencies.
+  base:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        - REPO=${REPO}
+        - ROS_DISTRO=${ROS_DISTRO}
+      target: base
+    image: ${REPO}-base:${ROS_DISTRO}
+    # Interactive shell
+    stdin_open: true
+    tty: true
+    # Networking and IPC for ROS 2
+    network_mode: host
+    ipc: host
+    # Needed to display graphical applications
+    privileged: True
+    environment:
+      # Allows graphical programs in the container.
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      # Needed to run ROS 2 nodes
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+      - TERM=xterm-256color
+    volumes:
+      # Allows graphical programs in the container.
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ${XAUTHORITY:-$HOME/.Xauthority}:/root/.Xauthority
+      # Mount devices and configuration files
+      - /dev:/dev
+      # Mount ssh keys and git config
+      - ~/.ssh:${HOME}/.ssh:ro
+      - ~/.gitconfig:${HOME}/.gitconfig:ro
+      # Mount group and passwd files for user permissions
+      - /etc/group:/etc/group:ro
+      - /etc/passwd:/etc/passwd:ro
+      - /etc/shadow:/etc/shadow:ro
+  # Overlay image containing the example source code.
+  overlay:
+    extends: base
+    image: ${REPO}-overlay:${ROS_DISTRO}
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: overlay
+
+  # Developer container
+  dev:
+    extends: overlay
+    image: ${REPO}-dev:${ROS_DISTRO}
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: dev
+      args:
+        - UID=${UID:-1000}
+        - GID=${UID:-1000}
+        - USERNAME=${USERNAME:-devuser}
+    volumes:
+      # Mount the source code
+      - ./${REPO}:/overlay_ws/src/${REPO}:rw
+      # Mount colcon build artifacts for faster rebuilds
+      - ./.colcon/build/:/overlay_ws/build/:rw
+      - ./.colcon/install/:/overlay_ws/install/:rw
+      - ./.colcon/log/:/overlay_ws/log/:rw
+    user: ${USERNAME:-devuser}
+    container_name: ${USER}-${REPO}-dev
+    command: bash -c "bash"
+
+  # Runs basic TurtleBot3 simulation
+  # sim:
+  #   extends: overlay
+  #   command: ros2 launch turtlebot3_gazebo turtlebot3_world.launch.py
