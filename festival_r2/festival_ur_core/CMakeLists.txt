@@ -6,10 +6,14 @@ add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
 find_package(ament_cmake REQUIRED)
-find_package(moveit_ros_planning_interface REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(std_srvs REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 find_package(festival_ur_interfaces REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
 find_package(eigen3_cmake_module REQUIRED)
 find_package(Eigen3)
 
@@ -25,11 +29,12 @@ add_library(${PROJECT_NAME}_lib
 set(DEPENDENCIES
     "Eigen3"
     "std_msgs"
+    "sensor_msgs"
+    "std_srvs"
     "rclcpp"
     "tf2"
     "tf2_ros"
     "festival_ur_interfaces"
-    "moveit_ros_planning_interface"
 )
 
 set(EXECUTABLE_NAME "festival_ur_core")
@@ -65,4 +70,4 @@ install(TARGETS ${EXECUTABLE_NAME}
 )
 
 ament_export_include_directories(include)
-ament_package() 
+ament_package()

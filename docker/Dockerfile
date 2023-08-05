@@ -4,7 +4,7 @@ ARG ROS_DISTRO=humble
 ########################################
 # Base Image for TurtleBot3 Simulation #
 ########################################
-FROM osrf/ros:${ROS_DISTRO}-desktop-full as base
+FROM osrf/ros:${ROS_DISTRO}-desktop as base
 ARG REPO
 ENV ROS_DISTRO=${ROS_DISTRO}
 SHELL ["/bin/bash", "-c"]
@@ -74,8 +74,7 @@ RUN mkdir -p /overlay_ws/src
 WORKDIR /overlay_ws
 COPY ./${REPO}/ ./src/${REPO}/
 RUN source /upstream_ws/install/setup.bash \
-    && rosdep install --from-paths src --ignore-src --rosdistro ${ROS_DISTRO} -y \
-    && colcon build --symlink-install
+    && rosdep install --from-paths src --ignore-src --rosdistro ${ROS_DISTRO} -y
 
 # Set up the entrypoint
 COPY ./docker/entrypoint.sh /
@@ -95,9 +94,6 @@ ARG GID=${GID}
 RUN --mount=type=cache,target=/var/cache/apt,id=apt \
     apt-get update && apt-get install -y --no-install-recommends \
     gdb gdbserver nano \
-    clang-14 \
-    clang-format-14 \
-    clang-tidy-14 \
     git \
     openssh-client \
     python3-pip \

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright 2021 Stogl Robotics Consulting UG (haftungsbeschränkt)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,7 +25,7 @@ class PublisherForwardPosition(Node):
         # Declare all parameters
         self.declare_parameter("controller_name", "forward_position_controller")
         self.declare_parameter("wait_sec_between_publish", 5)
-        self.declare_parameter("goal_names", ["pos1", "pos2"])
+        self.declare_parameter("goal_names", ["pos1", "pos2"])  ##pose
 
         # Read parameters
         controller_name = self.get_parameter("controller_name").value
