@@ -80,11 +80,10 @@ services:
       - ./.colcon/build/:/overlay_ws/build/:rw
       - ./.colcon/install/:/overlay_ws/install/:rw
       - ./.colcon/log/:/overlay_ws/log/:rw
+      # Mount docker directory for faster edits to Dockerfile
+      - ./docker:/overlay_ws/docker:rw
+      # Mount .devcontainer directory for faster edits to devcontainer.json
+      - ./.devcontainer:/overlay_ws/.devcontainer:rw
     user: ${USERNAME:-devuser}
     container_name: ${USER}-${REPO}-dev
     command: bash -c "bash"
-
-  # Runs basic TurtleBot3 simulation
-  # sim:
-  #   extends: overlay
-  #   command: ros2 launch turtlebot3_gazebo turtlebot3_world.launch.py
