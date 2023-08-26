@@ -45,6 +45,7 @@ services:
       - ${XAUTHORITY:-$HOME/.Xauthority}:/root/.Xauthority
       # Mount devices and configuration files
       - /dev:/dev
+      - /etc/udev:/etc/udev:ro
       # Mount ssh keys and git config
       - ~/.ssh:${HOME}/.ssh:ro
       - ~/.gitconfig:${HOME}/.gitconfig:ro
