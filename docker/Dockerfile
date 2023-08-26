@@ -24,6 +24,7 @@ RUN --mount=type=cache,target=/var/cache/apt,id=apt \
     python3-colcon-mixin \
     git libcanberra-gtk-module libcanberra-gtk3-module fuse3 libqt5svg5-dev \
     python3-pip python3-opencv python3-tk python3-pyqt5.qtwebengine \
+    software-properties-common \
     && rm -rf /var/lib/apt/lists/*
 
 # Install additional Python modules
@@ -76,6 +77,9 @@ COPY ./${REPO}/ ./src/${REPO}/
 RUN source /upstream_ws/install/setup.bash \
     && rosdep install --from-paths src --ignore-src --rosdistro ${ROS_DISTRO} -y
 
+# Copy the VSCode settings
+COPY ./.vscode /overlay_ws/.vscode
+
 # Set up the entrypoint
 COPY ./docker/entrypoint.sh /
 ENTRYPOINT [ "/entrypoint.sh" ]
@@ -92,18 +96,21 @@ ARG GID=${GID}
 
 # Install extra tools for development
 RUN --mount=type=cache,target=/var/cache/apt,id=apt \
-    apt-get update && apt-get install -y --no-install-recommends \
+    add-apt-repository ppa:sdurobotics/ur-rtde -y  \
+    && apt-get update && apt-get install -y --no-install-recommends \
     gdb gdbserver nano \
     git \
     openssh-client \
     python3-pip \
     vim \
     wget \
+    librtde librtde-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # install developer tools
 RUN python3 -m pip install --no-cache-dir \
-    pre-commit==3.0.4
+    pre-commit==3.0.4 \
+    ur_rtde
 
 # Create new user and home directory
 RUN groupadd --gid $GID $USERNAME \
