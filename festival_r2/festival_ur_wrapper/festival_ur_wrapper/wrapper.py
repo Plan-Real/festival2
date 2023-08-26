@@ -18,9 +18,9 @@ class URWrapper(Node):
         self.get_logger().info("URWrapper initialized")
 
         # Initialize robot
-        self.rtde_c.moveJ(self.init_joint, 0.5, 0.5)
+        self.rtde_c.moveJ(self.init_joint)
         self.get_logger().info("Robot initialized")
-
+        print(self.init_joint)
         # ROS2 publisher
         self.current_joint_pub = self.create_publisher(
             JointState, "current_joint_states", 10
@@ -37,13 +37,13 @@ class URWrapper(Node):
         )
 
         # ROS2 timer
-        self.Timer(self.get_clock(), 0.1, self.timer_publisher_callback)
+        self.timer_ = self.create_timer(0.1, self.timer_publisher_callback)
 
     def init_parameters(self):
         self.get_logger().info("Initializing parameters")
 
-        self.declare_parameter("ip_address", "127.0.0.1")
-        self.declare_parameter("init_joint", "[0, -math.pi/2, 0, -math.pi/2, 0, 0]")
+        self.declare_parameter("ip_address", "192.168.0.3")
+        self.declare_parameter("init_joint", [0.0, -1.5707, 0.0, -1.5707, 0.0, 0.0])
         self.declare_parameter("dt", 0.008)
 
         self.ip_address = (
@@ -52,6 +52,7 @@ class URWrapper(Node):
         self.init_joint = (
             self.get_parameter("init_joint").get_parameter_value().double_array_value
         )
+
         self.dt = self.get_parameter("dt").get_parameter_value().double_value
         self.get_logger().info("Parameters initialized")
 
