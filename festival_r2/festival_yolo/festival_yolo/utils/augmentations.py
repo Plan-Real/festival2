@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # YOLOv5 🚀 by Ultralytics, GPL-3.0 license
 """
 Image augmentation functions
@@ -10,13 +11,13 @@ import random
 import cv2
 import numpy as np
 
-from yolo_people.utils.general import (
+from utils.general import (
     colorstr,
     segment2box,
     resample_segments,
     check_version,
 )
-from yolo_people.utils.metrics import bbox_ioa
+from utils.metrics import bbox_ioa
 
 
 class Albumentations:

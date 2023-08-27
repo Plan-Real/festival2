@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # YOLOv5 🚀 by Ultralytics, GPL-3.0 license
 """
 Auto-anchor utils
@@ -10,7 +11,7 @@ import torch
 import yaml
 from tqdm import tqdm
 
-from yolo_people.utils.general import colorstr
+from utils.general import colorstr
 
 
 def check_anchor_order(m):

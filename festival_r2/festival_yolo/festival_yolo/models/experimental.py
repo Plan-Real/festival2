@@ -1,11 +1,12 @@
+# -*- coding: utf-8 -*-
 # This file contains experimental modules
 
 import numpy as np
 import torch
 import torch.nn as nn
 
-from festival_yolo.models.common import Conv, DWConv
-from festival_yolo.utils.google_utils import attempt_download
+from models.common import Conv, DWConv
+from utils.google_utils import attempt_download
 
 import sys
 

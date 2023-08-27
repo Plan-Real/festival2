@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import cv2
 import numpy as np
 import time
@@ -25,22 +26,22 @@ import cv2
 ### yolo v5
 import yaml
 import random
-from festival_yolo.utils.torch_utils import (
+from utils.torch_utils import (
     select_device,
     load_classifier,
     time_synchronized,
 )
-from festival_yolo.utils.general import (
+from utils.general import (
     check_img_size,
     non_max_suppression,
-    apply_classifier,
+    # apply_classifier,
     scale_coords,
-    xyxy2xywh,
-    strip_optimizer,
+    # xyxy2xywh,
+    # strip_optimizer,
     set_logging,
 )
-from festival_yolo.utils.datasets import LoadStreams, LoadImages, letterbox
-from festival_yolo.models.experimental import attempt_load
+from utils.datasets import LoadStreams, LoadImages, letterbox
+from models import experimental
 import torch.backends.cudnn as cudnn
 import torch
 
@@ -68,7 +69,9 @@ class YoloV5:
         # 如果是GPU则使用半精度浮点数 F16
         is_half = device.type != "cpu"
         # 载入模型
-        model = attempt_load(str(ROOT) + self.yolov5["weight"], map_location=device)
+        model = experimental.attempt_load(
+            str(ROOT) + self.yolov5["weight"], map_location=device
+        )
         input_size = check_img_size(
             self.yolov5["input_size"], s=model.stride.max()
         )  # 检查模型的尺寸
@@ -83,7 +86,7 @@ class YoloV5:
         print(is_half)
         # 创建模型
         # run once
-        _ = model(img_torch.half())
+        _ = model(img_torch.half() if is_half else img_torch)
         # _ = model(img_torch.half() if is_half else img) if device.type != 'cpu' else None
         self.is_half = is_half  # 是否开启半精度
         self.device = device  # 计算设备
@@ -91,28 +94,13 @@ class YoloV5:
         self.img_torch = img_torch  # 图像缓冲区
 
     def preprocessing(self, img):
-        """图像预处理"""
-        # 图像缩放
-        # 注: auto一定要设置为False -> 图像的宽高不同
         img_resize = letterbox(
             img,
             new_shape=(self.yolov5["input_size"], self.yolov5["input_size"]),
             auto=False,
         )[0]
-        # print("img resize shape: {}".format(img_resize.shape))
-        # 增加一个维度
         img_arr = np.stack([img_resize], 0)
-        # 图像转换 (Convert) BGR格式转换为RGB
-        # 转换为 bs x 3 x 416 x
-        # 0(图像i), 1(row行), 2(列), 3(RGB三通道)
-        # ---> 0, 3, 1, 2
-        # BGR to RGB, to bsx3x416x416
         img_arr = img_arr[:, :, :, ::-1].transpose(0, 3, 1, 2)
-        # 数值归一化
-        # img_arr =  img_arr.astype(np.float32) / 255.0
-        # 将数组在内存的存放地址变成连续的(一维)， 行优先
-        # 将一个内存不连续存储的数组转换为内存连续存储的数组，使得运行速度更快
-        # https://zhuanlan.zhihu.com/p/59767914
         img_arr = np.ascontiguousarray(img_arr)
         return img_arr
 
@@ -130,6 +118,7 @@ class YoloV5:
             self.img_torch = self.img_torch.unsqueeze(0)
         # 模型推理
         t1 = time_synchronized()
+
         pred = self.model(self.img_torch, augment=False)[0]
         # pred = self.model_trt(self.img_torch, augment=False)[0]
         # NMS 非极大值抑制
@@ -199,7 +188,7 @@ class Yolo_people(Node):
         self.pipeline = rs.pipeline()
         self.config = rs.config()
         self.config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
-        self.config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
+        self.config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
         self.profile = self.pipeline.start(self.config)
         self.align_to = rs.stream.color
         self.align = rs.align(self.align_to)

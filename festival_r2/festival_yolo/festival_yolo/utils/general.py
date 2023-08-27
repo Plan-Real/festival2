@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # YOLOv5 🚀 by Ultralytics, GPL-3.0 license
 """
 General utils
@@ -28,8 +29,8 @@ import torch
 import torchvision
 import yaml
 
-from yolo_people.utils.downloads import gsutil_getsize
-from yolo_people.utils.metrics import box_iou, fitness
+# from yolo_people.utils.downloads import gsutil_getsize
+# from yolo_people.utils.metrics import box_iou, fitness
 
 # Settings
 torch.set_printoptions(linewidth=320, precision=5, profile="long")

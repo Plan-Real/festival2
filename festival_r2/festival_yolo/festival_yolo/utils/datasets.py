@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # YOLOv5 🚀 by Ultralytics, GPL-3.0 license
 """
 Dataloaders and dataset utils
@@ -25,7 +26,7 @@ from PIL import Image, ExifTags
 from torch.utils.data import Dataset
 from tqdm import tqdm
 
-from yolo_people.utils.augmentations import (
+from utils.augmentations import (
     Albumentations,
     augment_hsv,
     copy_paste,
@@ -33,7 +34,7 @@ from yolo_people.utils.augmentations import (
     mixup,
     random_perspective,
 )
-from yolo_people.utils.general import (
+from utils.general import (
     check_requirements,
     check_file,
     check_dataset,
@@ -44,7 +45,7 @@ from yolo_people.utils.general import (
     segments2boxes,
     clean_str,
 )
-from yolo_people.utils.torch_utils import torch_distributed_zero_first
+from utils.torch_utils import torch_distributed_zero_first
 
 # Parameters
 HELP_URL = "https://github.com/ultralytics/yolov5/wiki/Train-Custom-Data"
