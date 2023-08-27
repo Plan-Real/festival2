@@ -4,6 +4,7 @@ ARG ROS_DISTRO=humble
 ########################################
 # Base Image for TurtleBot3 Simulation #
 ########################################
+FROM nvidia/cudagl:11.1.1-base-ubuntu20.04 as gpu
 FROM osrf/ros:${ROS_DISTRO}-desktop as base
 ARG REPO
 ENV ROS_DISTRO=${ROS_DISTRO}

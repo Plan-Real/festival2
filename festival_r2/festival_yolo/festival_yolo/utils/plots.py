@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Plotting utils
 
 import glob
@@ -18,8 +19,8 @@ import yaml
 from PIL import Image, ImageDraw
 from scipy.signal import butter, filtfilt
 
-from yolo_people.utils.general import xywh2xyxy, xyxy2xywh
-from yolo_people.utils.metrics import fitness
+from utils.general import xywh2xyxy, xyxy2xywh
+from utils.metrics import fitness
 
 # Settings
 matplotlib.rc("font", **{"size": 11})

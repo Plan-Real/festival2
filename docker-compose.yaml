@@ -13,8 +13,14 @@
 
 version: "3.9"
 services:
+  gpu:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: gpu
   # Base image containing dependencies.
   base:
+    extends: gpu
     build:
       context: .
       dockerfile: docker/Dockerfile
