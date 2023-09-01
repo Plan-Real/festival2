@@ -1,0 +1,24 @@
+{
+    "configurations": [
+      {
+        "browse": {
+          "databaseFilename": "${default}",
+          "limitSymbolsToIncludedHeaders": false
+        },
+        "includePath": [
+          "/overlay_ws/install/pulgin_example/include/**",
+          "/overlay_ws/install/festival_ur_interfaces/include/**",
+          "/upstream_ws/install/units/include/**",
+          "/opt/ros/foxy/include/**",
+          "/overlay_ws/src/festival_r2/festival_ur_core/include/**",
+          "/usr/include/**"
+        ],
+        "name": "ROS",
+        "intelliSenseMode": "gcc-x64",
+        "compilerPath": "/usr/bin/gcc",
+        "cStandard": "gnu11",
+        "cppStandard": "c++14"
+      }
+    ],
+    "version": 4
+  }
