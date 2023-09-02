@@ -1,7 +1,7 @@
 {
-    "dockerComposeFile": "../docker-compose.yaml",
-    "service": "dev",
-    "workspaceFolder" : "/overlay_ws",
+	"dockerComposeFile": "../docker-compose.yaml",
+	"service": "dev",
+	"workspaceFolder": "/overlay_ws",
 	"customizations": {
 		"vscode": {
 			"extensions": [
@@ -17,7 +17,8 @@
 				"streetsidesoftware.code-spell-checker",
 				"twxs.cmake",
 				"yzhang.markdown-all-in-one",
-				"zachflower.uncrustify"
+				"zachflower.uncrustify",
+				"ms-python.autopep8"
 			]
 		}
 	}

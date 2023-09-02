@@ -9,29 +9,28 @@
         "*.xacro": "xml"
     },
     "python.autoComplete.extraPaths": [
-        "/overlay_ws/install/festival_yolo/lib/python3.8/site-packages",
-        "/overlay_ws/build/festival_ur_wrapper",
-        "/overlay_ws/install/festival_ur_wrapper/lib/python3.8/site-packages",
-        "/overlay_ws/install/festival_ur_control_node/lib/python3.8/site-packages",
-        "/overlay_ws/install/festival_ur_interfaces/lib/python3.8/site-packages",
-        "/overlay_ws/install/festival_ur3/lib/python3.8/site-packages",
         "/opt/ros/foxy/lib/python3.8/site-packages",
-        "/home/joenghan/.local/lib/python3.8/site-packages"
     ],
     "python.analysis.extraPaths": [
-        "/overlay_ws/install/festival_yolo/lib/python3.8/site-packages",
-        "/overlay_ws/build/festival_ur_wrapper",
-        "/overlay_ws/install/festival_ur_wrapper/lib/python3.8/site-packages",
-        "/overlay_ws/install/festival_ur_control_node/lib/python3.8/site-packages",
-        "/overlay_ws/install/festival_ur_interfaces/lib/python3.8/site-packages",
-        "/overlay_ws/install/festival_ur3/lib/python3.8/site-packages",
         "/opt/ros/foxy/lib/python3.8/site-packages",
-        "/home/joenghan/.local/lib/python3.8/site-packages"
     ],
     "python.envFile": "${workspaceFolder}/.env",
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.autopep8",
+        "editor.formatOnSave": true,
+        "editor.formatOnPaste": true,
+        "editor.formatOnType": true,
+        "editor.rulers": [
+            100
+        ],
+        "editor.tabSize": 8,
+        "editor.wordWrap": "on",
+        "editor.wordWrapColumn": 100,
+      },
+
     "C_Cpp.default.intelliSenseMode": "linux-gcc-x86",
     "C_Cpp.formatting": "disabled",
-    "uncrustify.configPath.linux": "/opt/ros/humble/lib/python3.8/site-packages/ament_uncrustify/configuration/ament_code_style.cfg",
+    "uncrustify.configPath.linux": "/opt/ros/foxy/lib/python3.8/site-packages/ament_uncrustify/configuration/ament_code_style.cfg",
     "[cpp]": {
         "editor.defaultFormatter": "zachflower.uncrustify"
     },
@@ -77,9 +76,5 @@
         ".vscode",
         ".vscode-insiders",
         ".devcontainer/devcontainer.json"
-    ],
-    "[python]": {
-        "editor.defaultFormatter": "ms-python.black-formatter",
-        "editor.formatOnSave": true
-    }
+    ]
 }

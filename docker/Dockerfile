@@ -78,8 +78,6 @@ COPY ./${REPO}/ ./src/${REPO}/
 RUN source /upstream_ws/install/setup.bash \
     && rosdep install --from-paths src --ignore-src --rosdistro ${ROS_DISTRO} -y
 
-# Copy the VSCode settings
-COPY ./.vscode /overlay_ws/.vscode
 
 # Set up the entrypoint
 COPY ./docker/entrypoint.sh /

@@ -91,6 +91,8 @@ services:
       - ./docker:/overlay_ws/docker:rw
       # Mount .devcontainer directory for faster edits to devcontainer.json
       - ./.devcontainer:/overlay_ws/.devcontainer:rw
+      # Mount .vscode directory for faster edits
+      - ./.vscode:/overlay_ws/.vscode:rw
     user: ${USERNAME:-devuser}
     container_name: ${USER}-${REPO}-dev
     command: bash -c "bash"
