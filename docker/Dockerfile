@@ -29,11 +29,16 @@ RUN --mount=type=cache,target=/var/cache/apt,id=apt \
     && rm -rf /var/lib/apt/lists/*
 
 # Install additional Python modules
-RUN pip3 install matplotlib transforms3d
+RUN pip3 install  transforms3d \
+    matplotlib==3.2.2 \
+    opencv-python==4.8.0.76 \
+    ultralytics==8.0.162 \
+    numpy==1.22.2
 
 # Use Cyclone DDS as middleware
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ros-${ROS_DISTRO}-rmw-cyclonedds-cpp
+    ros-${ROS_DISTRO}-rmw-cyclonedds-cpp \
+    ros-${ROS_DISTRO}-realsense2-camera
 ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
 # Create Colcon workspace with external dependencies
@@ -75,8 +80,8 @@ FROM base AS overlay
 RUN mkdir -p /overlay_ws/src
 WORKDIR /overlay_ws
 COPY ./${REPO}/ ./src/${REPO}/
-RUN source /upstream_ws/install/setup.bash \
-    && rosdep install --from-paths src --ignore-src --rosdistro ${ROS_DISTRO} -y
+RUN source /upstream_ws/install/setup.bash
+# && rosdep install --from-paths src --ignore-src --rosdistro ${ROS_DISTRO} -y
 
 
 # Set up the entrypoint
