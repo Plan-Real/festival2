@@ -18,7 +18,10 @@
 from launch import LaunchDescription
 from launch_ros.actions import Node
 from launch.substitutions import LaunchConfiguration
-from launch.actions import DeclareLaunchArgument
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import PathJoinSubstitution
+from launch_ros.substitutions import FindPackageShare
 
 
 def generate_launch_description():
@@ -55,7 +58,7 @@ def generate_launch_description():
     input_image_topic = LaunchConfiguration("input_image_topic")
     input_image_topic_cmd = DeclareLaunchArgument(
         "input_image_topic",
-        default_value="/camera/rgb/image_raw",
+        default_value="/camera/color/image_raw",
         description="Name of the input image topic",
     )
 
@@ -78,23 +81,37 @@ def generate_launch_description():
         remappings=[("image_raw", input_image_topic)],
     )
 
-    # tracking_node_cmd = Node(
-    #     package="festival_ur_yolo",
-    #     executable="tracking_node",
-    #     name="tracking_node",
-    #     namespace=namespace,
-    #     parameters=[{"tracker": tracker}],
-    #     remappings=[("image_raw", input_image_topic)]
-    # )
+    tracking_node_cmd = Node(
+        package="festival_ur_yolo",
+        executable="tracking_node",
+        name="tracking_node",
+        namespace=namespace,
+        parameters=[{"tracker": tracker}],
+        remappings=[("image_raw", input_image_topic)],
+    )
 
-    # debug_node_cmd = Node(
-    #     package="festival_ur_yolo",
-    #     executable="debug_node",
-    #     name="debug_node",
-    #     namespace=namespace,
-    #     remappings=[("image_raw", input_image_topic),
-    #                 ("detections", "tracking")]
-    # )
+    debug_node_cmd = Node(
+        package="festival_ur_yolo",
+        executable="debug_node",
+        name="debug_node",
+        namespace=namespace,
+        remappings=[("image_raw", input_image_topic), ("detections", "tracking")],
+    )
+    rs_launch_cmd = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            [
+                PathJoinSubstitution(
+                    [FindPackageShare("realsense2_camera"), "launch", "rs_launch.py"]
+                )
+            ]
+        ),
+        launch_arguments={
+            "pointcloud.enable": "True",
+            "depth_module.profile": "1280x720x30"
+            # 'use_provided_red': 'True',
+            # 'new_background_r': TextSubstitution(text=str(colors['background_r']))
+        }.items(),
+    )
 
     ld = LaunchDescription()
 
@@ -107,7 +124,7 @@ def generate_launch_description():
     ld.add_action(namespace_cmd)
 
     ld.add_action(detector_node_cmd)
-    # ld.add_action(tracking_node_cmd)
-    # ld.add_action(debug_node_cmd)
-
+    ld.add_action(tracking_node_cmd)
+    ld.add_action(debug_node_cmd)
+    ld.add_action(rs_launch_cmd)
     return ld
