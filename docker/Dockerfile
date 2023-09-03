@@ -33,7 +33,8 @@ RUN pip3 install  transforms3d \
     matplotlib==3.2.2 \
     opencv-python==4.8.0.76 \
     ultralytics==8.0.162 \
-    numpy==1.22.2
+    numpy==1.22.2 \
+    lap
 
 # Use Cyclone DDS as middleware
 RUN apt-get update && apt-get install -y --no-install-recommends \
