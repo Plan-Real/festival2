@@ -41,14 +41,17 @@ class Detect3DNode(Node):
         self.tf_listener = TransformListener(self.tf_buffer, self)
 
         # pubs
-        self._pub = self.create_publisher(DetectionArray, "detections_3d", 10)
+        self._pub = self.create_publisher(DetectionArray, "/yolo/detections_3d", 10)
 
         # subs
         self.points_sub = message_filters.Subscriber(
-            self, PointCloud2, "points", qos_profile=qos_profile_sensor_data
+            self,
+            PointCloud2,
+            "/camera/depth/color/points",
+            qos_profile=qos_profile_sensor_data,
         )
         self.detections_sub = message_filters.Subscriber(
-            self, DetectionArray, "detections"
+            self, DetectionArray, "/yolo/tracking"
         )
 
         self._synchronizer = message_filters.ApproximateTimeSynchronizer(
@@ -62,20 +65,21 @@ class Detect3DNode(Node):
         detections_msg: DetectionArray,
     ) -> None:
         # check if there are detections
+
         if not detections_msg.detections:
             return
-
         transform = self.get_transform(points_msg.header.frame_id)
 
         if transform is None:
             return
-
+        print(f"height : {points_msg.height}")
         points = np.frombuffer(points_msg.data, np.float32).reshape(
             points_msg.height, points_msg.width, -1
         )[:, :, :3]
 
         new_detections_msg = DetectionArray()
         new_detections_msg.header = detections_msg.header
+        new_detections_msg.header.stamp = self.get_clock().now().to_msg()
 
         for detection in detections_msg.detections:
             bbox3d = self.convert_bb_to_3d(points, detection)
@@ -137,6 +141,8 @@ class Detect3DNode(Node):
         masked_points = points[mask].reshape(-1, 3)
 
         # maximum_detection_threshold
+        print(points.shape)
+        print(center_x, center_y)
         center_point = points[int(center_y)][int(center_x)]
         z_diff = np.abs(masked_points[:, 2] - center_point[2])
         mask_z = z_diff <= self.maximum_detection_threshold
