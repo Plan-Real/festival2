@@ -30,7 +30,7 @@ def generate_launch_description():
     #
     model = LaunchConfiguration("model")
     model_cmd = DeclareLaunchArgument(
-        "model", default_value="yolov8m.pt", description="Model name or path"
+        "model", default_value="yolov8n.pt", description="Model name or path"
     )
 
     tracker = LaunchConfiguration("tracker")
@@ -150,13 +150,13 @@ def generate_launch_description():
             ]
         ),
         launch_arguments={
-            "align_depth.enable": "true",
-            "pointcloud.enable": "true",
-            "depth_enable": "false",
-            # "pointcloud.ordered_pc": "true",
+            "align_depth.enable": "True",
+            "depth_enable": "False",
+            "pointcloud.enable": "True",
+            "pointcloud.ordered_pc": "True",
             # "depth_width": "640",
             # "depth_height": "480",
-            "depth_module.profile": "1280x720x30",
+            "depth_module.profile": "640x480x15",
             "pointcloud.stream_index_filter": "1"
             # 'use_provided_red': 'True',
             # 'new_background_r': TextSubstitution(text=str(colors['background_r']))
@@ -179,7 +179,7 @@ def generate_launch_description():
 
     ld.add_action(detector_node_cmd)
     ld.add_action(tracking_node_cmd)
-    ld.add_action(detect_3d_node_cmd)
-    ld.add_action(debug_node_cmd)
     ld.add_action(rs_launch_cmd)
+    # ld.add_action(detect_3d_node_cmd)
+    ld.add_action(debug_node_cmd)
     return ld

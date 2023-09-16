@@ -157,6 +157,9 @@ class Yolov8Node(Node):
                 stream=False,
                 conf=self.threshold,
                 device=self.device,
+                half=True,
+                classes=0,
+                max_det=1,
             )
             results: Results = results[0].cpu()
 

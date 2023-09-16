@@ -58,6 +58,7 @@ class Detect3DNode(Node):
             (self.points_sub, self.detections_sub), 10, 0.5
         )
         self._synchronizer.registerCallback(self.on_detections)
+        self.get_logger().info("Detect3DNode initialized")
 
     def on_detections(
         self,
@@ -65,25 +66,24 @@ class Detect3DNode(Node):
         detections_msg: DetectionArray,
     ) -> None:
         # check if there are detections
-
+        self.get_logger().info("Start function")
         if not detections_msg.detections:
             return
         transform = self.get_transform(points_msg.header.frame_id)
 
         if transform is None:
             return
-        print(f"height : {points_msg.height}")
         points = np.frombuffer(points_msg.data, np.float32).reshape(
             points_msg.height, points_msg.width, -1
         )[:, :, :3]
-
+        self.get_logger().info("1")
         new_detections_msg = DetectionArray()
         new_detections_msg.header = detections_msg.header
         new_detections_msg.header.stamp = self.get_clock().now().to_msg()
 
         for detection in detections_msg.detections:
             bbox3d = self.convert_bb_to_3d(points, detection)
-
+            self.get_logger().info("2")
             if bbox3d is not None:
                 new_detections_msg.detections.append(detection)
 
@@ -105,6 +105,8 @@ class Detect3DNode(Node):
     def convert_bb_to_3d(
         self, points: np.ndarray, detection: Detection
     ) -> BoundingBox3D:
+        print(points.shape[0])
+        print(points.shape[1])
         if detection.mask.data:
             detection_mask_x = np.array([point.x for point in detection.mask.data])
             detection_mask_y = np.array([point.y for point in detection.mask.data])
@@ -116,7 +118,7 @@ class Detect3DNode(Node):
 
             center_x = (bb_min_x + bb_max_x) / 2
             center_y = (bb_min_y + bb_max_y) / 2
-
+            print(center_x, center_y)
         else:
             center_x = detection.bbox.center.position.x
             center_y = detection.bbox.center.position.y
@@ -144,6 +146,7 @@ class Detect3DNode(Node):
         print(points.shape)
         print(center_x, center_y)
         center_point = points[int(center_y)][int(center_x)]
+        ### error point ####
         z_diff = np.abs(masked_points[:, 2] - center_point[2])
         mask_z = z_diff <= self.maximum_detection_threshold
         masked_points = masked_points[mask_z]
