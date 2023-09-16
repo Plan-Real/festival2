@@ -8,15 +8,17 @@ import rclpy
 from rclpy.node import Node
 from rclpy.duration import Duration
 from rclpy.qos import qos_profile_sensor_data
+from tf2_ros import TransformBroadcaster
 
 import message_filters
 from cv_bridge import CvBridge
 from ultralytics.utils.plotting import Annotator, colors
 
+from geometry_msgs.msg import TransformStamped
 from sensor_msgs.msg import Image
 from visualization_msgs.msg import Marker
 from visualization_msgs.msg import MarkerArray
-from festival_ur_interfaces.msg import BoundingBox2D
+from festival_ur_interfaces.msg import BoundingBox2D, BoundingBox3D
 from festival_ur_interfaces.msg import KeyPoint2D
 from festival_ur_interfaces.msg import KeyPoint3D
 from festival_ur_interfaces.msg import Detection
@@ -29,6 +31,8 @@ class DebugNode(Node):
 
         self._class_to_color = {}
         self.cv_bridge = CvBridge()
+
+        self.tf_broadcaster = TransformBroadcaster(self)
 
         # pubs
         self._dbg_pub = self.create_publisher(Image, "dbg_image", 10)
@@ -227,6 +231,7 @@ class DebugNode(Node):
             cv_image = self.draw_keypoints(cv_image, detection)
 
             if detection.bbox3d.frame_id:
+                self.create_human_tf(detection.bbox3d)
                 marker = self.create_bb_marker(detection)
                 marker.header.stamp = img_msg.header.stamp
                 marker.id = len(bb_marker_array.markers)
@@ -246,6 +251,23 @@ class DebugNode(Node):
         )
         self._bb_markers_pub.publish(bb_marker_array)
         self._kp_markers_pub.publish(kp_marker_array)
+
+    def create_human_tf(self, box3d: BoundingBox3D):
+        t = TransformStamped()
+        t.header.stamp = self.get_clock().now().to_msg()
+        t.header.frame_id = "base_link"
+        t.child_frame_id = "human_tf"
+
+        t.transform.translation.x = box3d.center.position.x
+        t.transform.translation.y = box3d.center.position.y
+        t.transform.translation.z = box3d.center.position.z
+
+        t.transform.rotation.x = box3d.center.orientation.x
+        t.transform.rotation.y = box3d.center.orientation.y
+        t.transform.rotation.z = box3d.center.orientation.z
+        t.transform.rotation.w = box3d.center.orientation.w
+
+        self.tf_broadcaster.sendTransform(t)
 
 
 def main():
