@@ -30,7 +30,7 @@ def generate_launch_description():
     #
     model = LaunchConfiguration("model")
     model_cmd = DeclareLaunchArgument(
-        "model", default_value="yolov8m.pt", description="Model name or path"
+        "model", default_value="yolov8n-face.pt", description="Model name or path"
     )
 
     tracker = LaunchConfiguration("tracker")
@@ -107,7 +107,7 @@ def generate_launch_description():
         ),
         launch_arguments={
             "pointcloud.enable": "True",
-            "depth_module.profile": "1280x720x30"
+            "depth_module.profile": "640x480x15"
             # 'use_provided_red': 'True',
             # 'new_background_r': TextSubstitution(text=str(colors['background_r']))
         }.items(),

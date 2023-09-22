@@ -30,7 +30,7 @@ def generate_launch_description():
     #
     model = LaunchConfiguration("model")
     model_cmd = DeclareLaunchArgument(
-        "model", default_value="yolov8n.pt", description="Model name or path"
+        "model", default_value="yolov8n-face.pt", description="Model name or path"
     )
 
     tracker = LaunchConfiguration("tracker")
@@ -150,13 +150,15 @@ def generate_launch_description():
             ]
         ),
         launch_arguments={
-            "align_depth.enable": "True",
-            "depth_enable": "False",
+            "align_depth.enable": "false",
+            "depth_enable": "false",
+            "spatial_filter.enable": "true",
+            "temporal_filter.enable": "true",
+            "hole_filling.enable": "true",
+            "decimation_filter.enable": "true",
             "pointcloud.enable": "True",
             "pointcloud.ordered_pc": "True",
-            # "depth_width": "640",
-            # "depth_height": "480",
-            "depth_module.profile": "640x480x15",
+            "depth_module.profile": "640x480x30",
             "pointcloud.stream_index_filter": "1"
             # 'use_provided_red': 'True',
             # 'new_background_r': TextSubstitution(text=str(colors['background_r']))
