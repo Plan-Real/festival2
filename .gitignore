@@ -5,4 +5,9 @@
 .colcon/
 .vscode/
 **/__pycache__/
+<<<<<<< HEAD
 >>>>>>> 76c3cf2... Update docker env
+=======
+*.pt
+**/festival_ur_yolo/
+>>>>>>> 8929e65... Add festival_gym
