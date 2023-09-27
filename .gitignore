@@ -1,3 +1,5 @@
 .colcon/
 .vscode/
 **/__pycache__/
+*.pt
+**/festival_ur_yolo/
