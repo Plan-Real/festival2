@@ -1,4 +1,0 @@
-festival_gym_node:
-  ros__parameters:
-    target_frame: "human_link"
-    source_frame: "camera_link"
