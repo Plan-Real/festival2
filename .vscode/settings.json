@@ -15,18 +15,6 @@
         "/opt/ros/foxy/lib/python3.8/site-packages",
     ],
     "python.envFile": "${workspaceFolder}/.env",
-    "[python]": {
-        "editor.defaultFormatter": "ms-python.autopep8",
-        "editor.formatOnSave": true,
-        "editor.formatOnPaste": true,
-        "editor.formatOnType": true,
-        "editor.rulers": [
-            100
-        ],
-        "editor.tabSize": 8,
-        "editor.wordWrap": "on",
-        "editor.wordWrapColumn": 100,
-    },
     "C_Cpp.default.intelliSenseMode": "linux-gcc-x86",
     "C_Cpp.formatting": "disabled",
     "uncrustify.configPath.linux": "/opt/ros/foxy/lib/python3.8/site-packages/ament_uncrustify/configuration/ament_code_style.cfg",
