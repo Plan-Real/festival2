@@ -39,7 +39,7 @@ repos:
       - id: mixed-line-ending
       - id: fix-byte-order-marker
       - id: fix-encoding-pragma
-      - id: forbid-new-submodules
+      # - id: forbid-new-submodules
       - id: mixed-line-ending
       - id: name-tests-test
       # - id: no-commit-to-branch
