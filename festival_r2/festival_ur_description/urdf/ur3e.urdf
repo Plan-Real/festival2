@@ -249,7 +249,7 @@
   </joint>
   <link name="display">
     <visual>
-      <origin rpy="0 3.141592653589793 1.5707963267948966" xyz="0.054 0 0.0"/>
+      <origin rpy="1.5707963267948966 3.141592653589793 1.5707963267948966" xyz="0 0 0.0"/>
       <geometry>
         <mesh filename="package://festival_ur_description/meshes/ur3e/visual/display.stl" scale="0.001 0.001 0.001"/>
       </geometry>
@@ -258,9 +258,9 @@
       </material>
     </visual>
     <collision>
-      <origin rpy="0 0 0" xyz="0.03075 0 0.0"/>
+      <origin rpy="1.5707963267948966 3.141592653589793 1.5707963267948966" xyz="-0.02375 0 0"/>
       <geometry>
-        <box size="0.0615 0.2665 0.179"/>
+        <box size="0.2665 0.179 0.0615"/>
       </geometry>
     </collision>
     <inertial>
@@ -271,7 +271,7 @@
   </link>
   <joint name="display_joint" type="fixed">
     <!-- default toolframe - X+ left, Y+ up, Z+ front -->
-    <origin rpy="0 0 0" xyz="0.0 0 0.0"/>
+    <origin rpy="0 0 0" xyz="0.0565 0 0.0"/>
     <parent link="ur3eflange"/>
     <child link="display"/>
   </joint>
@@ -279,23 +279,17 @@
 
 
 
-  <joint name="camera_joint" type="fixed">
-    <origin rpy="3.141592653589793 0 0" xyz="0.0575 0.0 -0.07165"/>
-    <parent link="display"/>
-    <child link="camera_bottom_screw_frame"/>
-  </joint>
 
-  <link name="camera_bottom_screw_frame"/>
 
   <joint name="camera_link_joint" type="fixed">
-    <origin rpy="0 0 0" xyz="0.010600000000000002 0.0175 0.0125"/>
-    <parent link="camera_bottom_screw_frame"/>
+    <origin rpy="3.14159265359 0 0" xyz="0.0135 0.0 -0.105"/>
+    <parent link="display"/>
     <child link="camera_link"/>
   </joint>
   <link name="camera_link">
     <visual>
       <!-- the mesh origin is at front plate in between the two infrared camera axes -->
-      <origin rpy="-1.5707963267948966 0 0" xyz="0.0043 -0.0175 0"/>
+      <origin rpy="0 0 0" xyz="0.0  0 -0.012"/>
       <geometry>
         <mesh filename="package://festival_ur_description/meshes/sensors/d435.STL"/>
       </geometry>
@@ -304,9 +298,9 @@
       </material>
     </visual>
     <collision>
-      <origin rpy="0 0 0" xyz="0.0120  -0.0175 0.0125"/>
+      <origin rpy="1.5707963267948966 0 0" xyz="0.006 -0.0 0.0"/>
       <geometry>
-        <box size="0.02505 0.09 0.025"/>
+        <box size="0.02505 0.025 0.09"/>
       </geometry>
     </collision>
     <inertial>
