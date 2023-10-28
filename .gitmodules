@@ -1,0 +1,3 @@
+[submodule "festival_r2/festival_yolo"]
+	path = festival_r2/festival_yolo
+	url = https://github.com/Plan-Real/yolo.git
