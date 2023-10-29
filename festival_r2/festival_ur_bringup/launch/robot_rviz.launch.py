@@ -29,6 +29,10 @@ def generate_launch_description():
 
     rsp_params = {"robot_description": robot_desc}
 
+    rviz_config_dir = os.path.join(
+        get_package_share_directory("festival_ur_bringup"), "rviz", "model.rviz"
+    )
+
     return LaunchDescription(
         [
             DeclareLaunchArgument(
@@ -43,11 +47,19 @@ def generate_launch_description():
                 output="screen",
                 parameters=[rsp_params, {"use_sim_time": use_sim_time}],
             ),
+            # Node(
+            #     package="joint_state_publisher",
+            #     executable="joint_state_publisher",
+            #     name="joint_state_publisher",
+            #     output="screen",
+            #     parameters=[rsp_params, {"use_sim_time": use_sim_time}],
+            # ),
             Node(
-                package="joint_state_publisher",
-                executable="joint_state_publisher",
-                name="joint_state_publisher",
+                package="rviz2",
+                executable="rviz2",
+                name="rviz2",
                 output="screen",
+                arguments=["-d", rviz_config_dir],
                 parameters=[rsp_params, {"use_sim_time": use_sim_time}],
             ),
         ]
