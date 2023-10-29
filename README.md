@@ -46,6 +46,12 @@ If you are curious about the contents related to the festival server, click this
        />
 </p>
 
+### How to run
+#### install
+'''
+git clone --recurse-submodules https://github.com/Plan-Real/festival
+'''
+
 ### Special Thanks
 김완수(Wansoo Kim):Profeesial at Department of Robotics Engineering , Hanyang University ERICA [HARCO Lab](https://harco.hanyang.ac.kr/) \
 박창순(Changsson Park):Profeesial, Hanyang University ERICA \
