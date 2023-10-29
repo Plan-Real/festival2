@@ -4,3 +4,6 @@
 [submodule "IsaacGymEnvs"]
 	path = IsaacGymEnvs
 	url = https://github.com/NVIDIA-Omniverse/IsaacGymEnvs.git
+[submodule "festival_r2/festival_gym"]
+	path = festival_r2/festival_gym
+	url = https://github.com/Plan-Real/festival-gym.git
