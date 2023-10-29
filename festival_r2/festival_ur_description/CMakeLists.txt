@@ -37,7 +37,7 @@ endif()
 # Install
 ##############################################################################
 install(
-  DIRECTORY rviz urdf meshes
+  DIRECTORY urdf meshes
   DESTINATION share/${PROJECT_NAME}
 )
 ##############################################################################

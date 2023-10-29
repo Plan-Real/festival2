@@ -61,7 +61,7 @@ ament_export_dependencies(eigen3_cmake_module)
 ament_export_dependencies(Eigen3)
 
 
-install(DIRECTORY launch param
+install(DIRECTORY launch config
   DESTINATION share/${PROJECT_NAME}
 )
 
