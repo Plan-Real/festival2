@@ -1,3 +1,6 @@
 [submodule "festival_r2/festival_yolo"]
 	path = festival_r2/festival_yolo
 	url = https://github.com/Plan-Real/yolo.git
+[submodule "IsaacGymEnvs"]
+	path = IsaacGymEnvs
+	url = https://github.com/NVIDIA-Omniverse/IsaacGymEnvs.git
