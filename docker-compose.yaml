@@ -39,6 +39,9 @@ services:
         - REPO=${REPO}
         - ROS_DISTRO=${ROS_DISTRO}
       target: base
+
+    ports:
+      - 5000:5000
     image: ${REPO}-base:${ROS_DISTRO}
     # Interactive shell
     stdin_open: true
@@ -79,7 +82,9 @@ services:
       context: .
       dockerfile: docker/Dockerfile
       target: overlay
-
+      args:
+        - SIM_REPO=${SIM_REPO}
+        - SIM_REPO_ENV=${SIM_REPO_ENV}
   # Developer container
   dev:
     extends: overlay
@@ -93,7 +98,7 @@ services:
         - GID=${UID:-1000}
         - USERNAME=${USERNAME:-devuser}
     volumes:
-      # Mount the source code
+      # Mount the source codec
       - ./${REPO}:/overlay_ws/src/${REPO}:rw
       # Mount colcon build artifacts for faster rebuilds
       - ./.colcon/build/:/overlay_ws/build/:rw

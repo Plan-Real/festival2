@@ -1,9 +1,9 @@
 # ROS distribution to use
 ARG ROS_DISTRO=humble
 
-########################################
-# Base Image for TurtleBot3 Simulation #
-########################################
+###########################
+# Base Image for festival #
+###########################
 FROM nvidia/cudagl:11.1.1-base-ubuntu20.04 as gpu
 FROM osrf/ros:${ROS_DISTRO}-desktop as base
 ARG REPO
@@ -30,11 +30,8 @@ RUN --mount=type=cache,target=/var/cache/apt,id=apt \
 
 # Install additional Python modules
 RUN pip3 install  transforms3d \
-    matplotlib==3.2.2 \
-    opencv-python==4.8.0.76 \
-    ultralytics==8.0.162 \
-    numpy==1.22.2 \
-    lap
+    matplotlib \
+    torch
 
 # Use Cyclone DDS as middleware
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -67,10 +64,53 @@ WORKDIR /upstream_ws
 COPY ./docker/entrypoint.sh /
 ENTRYPOINT [ "/entrypoint.sh" ]
 
-###########################################
-# Overlay Image for TurtleBot3 Simulation #
-###########################################
+##############################
+# Overlay Image for festival #
+##############################
 FROM base AS overlay
+
+ARG SIM_REPO
+ARG SIM_REPO_ENV
+
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+    libxcursor-dev \
+    libxrandr-dev \
+    libxinerama-dev \
+    libxi-dev \
+    mesa-common-dev  \
+    zip \
+    unzip \
+    make \
+    gcc-8 \
+    g++-8 \
+    vulkan-utils   \
+    mesa-vulkan-drivers  \
+    pigz  \
+    git \
+    libegl1 \
+    git-lfs
+
+# Force gcc 8 to avoid CUDA 10 build issues on newer base OS
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 8 && \
+    update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 8
+
+# WAR for eglReleaseThread shutdown crash in libEGL_mesa.so.0 (ensure it's never detected/loaded)
+# Can't remove package libegl-mesa0 directly (because of libegl1 which we need)
+RUN rm /usr/lib/x86_64-linux-gnu/libEGL_mesa.so.0 /usr/lib/x86_64-linux-gnu/libEGL_mesa.so.0.0.0 /usr/share/glvnd/egl_vendor.d/50_mesa.json
+
+# Create an sim workspace
+WORKDIR /opt/sim
+COPY ./${SIM_REPO}/ ./${SIM_REPO}/
+COPY ./${SIM_REPO_ENV}/ ./${SIM_REPO_ENV}/
+ENV PATH="/opt/sim/.local/bin:$PATH"
+RUN mv ./${SIM_REPO}/docker/nvidia_icd.json /usr/share/vulkan/icd.d/nvidia_icd.json \
+    && mv ./${SIM_REPO}/docker/10_nvidia.json /usr/share/glvnd/egl_vendor.d/10_nvidia.json \
+    && cd /opt/sim/${SIM_REPO}/python && pip install -q -e . \
+    && cd /opt/sim/${SIM_REPO_ENV} && pip install -e .
+
+ENV NVIDIA_VISIBLE_DEVICES=all NVIDIA_DRIVER_CAPABILITIES=all
 
 # Create an overlay Colcon workspace
 RUN mkdir -p /overlay_ws/src
@@ -110,7 +150,11 @@ RUN --mount=type=cache,target=/var/cache/apt,id=apt \
 # install developer tools
 RUN python3 -m pip install --no-cache-dir \
     pre-commit==3.0.4 \
-    ur_rtde
+    ur_rtde \
+    flask \
+    flask_socketio \
+    ultralytics \
+    pyrealsense2
 
 # Create new user and home directory
 RUN groupadd --gid $GID $USERNAME \
@@ -121,7 +165,8 @@ RUN groupadd --gid $GID $USERNAME \
     && chown -R ${UID}:${GID} /home/${USERNAME}
 
 # Set the ownership of the overlay workspace to the new user
-RUN chown -R ${UID}:${GID} /overlay_ws/
+RUN chown -R ${UID}:${GID} /overlay_ws/ \
+    && chown -R ${UID}:${GID} /opt/sim/
 
 # Set the user and source entrypoint in the user's .bashrc file
 USER ${USERNAME}
