@@ -39,30 +39,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-${ROS_DISTRO}-realsense2-camera
 ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
-# Create Colcon workspace with external dependencies
-RUN mkdir -p /upstream_ws/src
-WORKDIR /upstream_ws/src
-COPY dependencies.repos .
-RUN vcs import < dependencies.repos
-
-# Build the base Colcon workspace, installing dependencies first.
-WORKDIR /upstream_ws
-RUN source /opt/ros/${ROS_DISTRO}/setup.bash \
-    && rosdep update && apt-get update -y \
-    && rosdep install --from-paths src --ignore-src --rosdistro ${ROS_DISTRO} -y \
-    && rm -rf /var/lib/apt/lists/* \
-    && colcon build --mixin release lld
-
 # Remove display warnings
 RUN mkdir /tmp/runtime-root
 ENV XDG_RUNTIME_DIR "/tmp/runtime-root"
 RUN chmod -R 0700 /tmp/runtime-root
 ENV NO_AT_BRIDGE 1
-
-# Set up the entrypoint
-WORKDIR /upstream_ws
-COPY ./docker/entrypoint.sh /
-ENTRYPOINT [ "/entrypoint.sh" ]
 
 ##############################
 # Overlay Image for festival #
@@ -167,6 +148,8 @@ RUN groupadd --gid $GID $USERNAME \
 # Set the ownership of the overlay workspace to the new user
 RUN chown -R ${UID}:${GID} /overlay_ws/ \
     && chown -R ${UID}:${GID} /opt/sim/
+
+ENV PATH="/home/${USERNAME}/.local/bin:$PATH"
 
 # Set the user and source entrypoint in the user's .bashrc file
 USER ${USERNAME}
